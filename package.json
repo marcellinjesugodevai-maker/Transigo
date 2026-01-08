@@ -1,0 +1,43 @@
+{
+  "name": "transigo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "TransiGo - Application VTC pour la Côte d'Ivoire",
+  "workspaces": [
+    "packages/*",
+    "apps/*",
+    "backend"
+  ],
+  "scripts": {
+    "passenger": "npm run dev --workspace=apps/passenger",
+    "driver": "npm run dev --workspace=apps/driver",
+    "admin": "npm run dev --workspace=apps/admin",
+    "backend": "npm run start:dev --workspace=backend",
+    "build:admin": "npm run build --workspace=apps/admin",
+    "build:backend": "npm run build --workspace=backend"
+  },
+  "keywords": [
+    "vtc",
+    "ride-hailing",
+    "transigo",
+    "ivory-coast"
+  ],
+  "author": "TransiGo Team",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "@nestjs/cli": "^11.0.14",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.3",
+    "lodash": "^4.17.21",
+    "rxjs": "^7.8.2",
+    "react": "18.2.0",
+    "react-native": "0.74.5"
+  },
+  "devDependencies": {
+    "babel-plugin-transform-inline-environment-variables": "^0.4.4"
+  },
+  "overrides": {
+    "react": "18.2.0",
+    "react-native": "0.74.5"
+  }
+}

@@ -1,0 +1,19 @@
+# System files
+AppData/
+.gemini/
+.agent/
+.git/
+node_modules/
+dist/
+build/
+.next/
+.expo/
+*.log
+
+# Windows specific
+thumbs.db
+desktop.ini
+
+# Project specific exclusions not needed for build
+artifacts/
+brain/

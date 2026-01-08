@@ -1,0 +1,10 @@
+node_modules/
+.expo/
+dist/
+build/
+.next/
+*.log
+.agent/
+.gemini/
+brain/
+artifacts/

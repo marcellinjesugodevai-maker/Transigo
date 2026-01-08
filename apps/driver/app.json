@@ -1,0 +1,58 @@
+{
+    "expo": {
+        "name": "TransiGo Business",
+        "slug": "transigo-business",
+        "version": "1.0.0",
+        "orientation": "portrait",
+        "icon": "./assets/icon.png",
+        "scheme": "transigo-business",
+        "userInterfaceStyle": "automatic",
+        "splash": {
+            "image": "./assets/splash.png",
+            "resizeMode": "contain",
+            "backgroundColor": "#DCFCE7"
+        },
+        "assetBundlePatterns": [
+            "**/*"
+        ],
+        "ios": {
+            "supportsTablet": false,
+            "bundleIdentifier": "com.transigo.driver",
+            "infoPlist": {
+                "NSLocationWhenInUseUsageDescription": "TransiGo a besoin de votre position pour recevoir des courses.",
+                "NSLocationAlwaysAndWhenInUseUsageDescription": "TransiGo a besoin de votre position pour la navigation.",
+                "UIBackgroundModes": [
+                    "location"
+                ]
+            }
+        },
+        "android": {
+            "adaptiveIcon": {
+                "foregroundImage": "./assets/adaptive-icon.png",
+                "backgroundColor": "#F5F5F5"
+            },
+            "package": "com.transigo.driver",
+            "permissions": [
+                "ACCESS_COARSE_LOCATION",
+                "ACCESS_FINE_LOCATION",
+                "ACCESS_BACKGROUND_LOCATION",
+                "FOREGROUND_SERVICE"
+            ]
+        },
+        "plugins": [
+            "expo-router",
+            "expo-font",
+            "expo-secure-store",
+            "expo-location"
+        ],
+        "experiments": {
+            "typedRoutes": true
+        },
+        "extra": {
+            "eas": {
+                "projectId": "fe9e2f20-f61e-4873-a726-13d38c934996"
+            }
+        },
+        "owner": "devai123"
+    }
+}
