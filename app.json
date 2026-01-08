@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "e572f2ca-d433-4796-9d8e-1ffe83e6c736"
+      }
+    },
+    "android": {
+      "package": "com.devai123.transigo"
+    }
+  }
+}
