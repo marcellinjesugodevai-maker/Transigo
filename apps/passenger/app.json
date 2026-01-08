@@ -31,12 +31,7 @@
                 "foregroundImage": "./assets/adaptive-icon.png",
                 "backgroundColor": "#FFF3E0"
             },
-            "package": "com.transigo.passenger",
-            "permissions": [
-                "ACCESS_COARSE_LOCATION",
-                "ACCESS_FINE_LOCATION",
-                "ACCESS_BACKGROUND_LOCATION"
-            ]
+            "package": "com.transigo.passenger"
         },
         "web": {
             "bundler": "metro",
@@ -47,12 +42,7 @@
             "expo-router",
             "expo-font",
             "expo-secure-store",
-            [
-                "expo-location",
-                {
-                    "locationAlwaysAndWhenInUsePermission": "TransiGo a besoin de votre position pour trouver des chauffeurs près de vous."
-                }
-            ]
+            "expo-location"
         ],
         "experiments": {
             "typedRoutes": true
