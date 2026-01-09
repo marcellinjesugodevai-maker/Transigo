@@ -56,7 +56,8 @@
             "newArchEnabled": false
           }
         }
-      ]
+      ],
+      "./plugins/withFixedReactNativePath"
     ],
     "experiments": {
       "typedRoutes": true
