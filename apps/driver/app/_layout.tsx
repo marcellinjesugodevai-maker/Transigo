@@ -1,8 +1,10 @@
 // TRANSIGO DRIVER - ROOT LAYOUT
-import { useEffect } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
+import * as Font from 'expo-font';
+import { Ionicons } from '@expo/vector-icons';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
@@ -20,13 +22,36 @@ const COLORS = {
 };
 
 export default function RootLayout() {
+    const [appIsReady, setAppIsReady] = useState(false);
+
     // Activer la synchro Wallet/Profil (Admin -> App)
     useDriverSync();
 
     useEffect(() => {
-        // Hide native splash immediately (our custom splash in index.tsx renders next frame)
-        SplashScreen.hideAsync();
+        async function prepare() {
+            try {
+                // Pre-load fonts (Ionicons for all icons in the app)
+                await Font.loadAsync({
+                    ...Ionicons.font,
+                });
+            } catch (e) {
+                console.warn('Error loading fonts:', e);
+            } finally {
+                setAppIsReady(true);
+            }
+        }
+        prepare();
     }, []);
+
+    const onLayoutRootView = useCallback(async () => {
+        if (appIsReady) {
+            await SplashScreen.hideAsync();
+        }
+    }, [appIsReady]);
+
+    if (!appIsReady) {
+        return null;
+    }
 
     return (
         <GestureHandlerRootView style={{ flex: 1 }}>

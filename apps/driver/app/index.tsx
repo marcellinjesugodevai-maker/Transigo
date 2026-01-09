@@ -3,7 +3,7 @@
 // Premium design with brand colors
 // =============================================
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
     View,
     Text,
@@ -30,6 +30,23 @@ const COLORS = {
 
 export default function SplashScreen() {
     const { driver } = useDriverStore();
+    const [isHydrated, setIsHydrated] = useState(false);
+
+    // Wait for Zustand store to hydrate from SecureStore
+    useEffect(() => {
+        const unsubFinishHydration = useDriverStore.persist.onFinishHydration(() => {
+            setIsHydrated(true);
+        });
+
+        // If already hydrated (can happen on fast devices)
+        if (useDriverStore.persist.hasHydrated()) {
+            setIsHydrated(true);
+        }
+
+        return () => {
+            unsubFinishHydration();
+        };
+    }, []);
 
     // Animations
     const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -82,10 +99,14 @@ export default function SplashScreen() {
                 Animated.timing(pulseAnim, { toValue: 1, duration: 600, useNativeDriver: true }),
             ])
         ).start();
+    }, []);
 
-        // Check onboarding and navigate
+    // Check onboarding and navigate AFTER hydration
+    useEffect(() => {
+        if (!isHydrated) return; // Wait for store to be ready
+
         const checkAndNavigate = async () => {
-            await new Promise(resolve => setTimeout(resolve, 2500));
+            await new Promise(resolve => setTimeout(resolve, 1500)); // Shorter delay since we already waited for hydration
 
             const hasSeenOnboarding = await AsyncStorage.getItem('hasSeenOnboarding');
 
@@ -100,7 +121,7 @@ export default function SplashScreen() {
         };
 
         checkAndNavigate();
-    }, []);
+    }, [isHydrated, driver]);
 
     return (
         <View style={styles.container}>
