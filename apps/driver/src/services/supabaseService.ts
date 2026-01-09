@@ -23,7 +23,7 @@ const AsyncStorageAdapter = {
 };
 
 const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL || 'https://zndgvloyaitopczhjddq.supabase.co';
-const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
+const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpuZGd2bG95YWl0b3BjemhqZGRxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc1NTc1MDgsImV4cCI6MjA4MzEzMzUwOH0.KTHGtMaaWW_GhXacarRN40iqlFUp2KPirp_5peHWBls';
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     auth: {

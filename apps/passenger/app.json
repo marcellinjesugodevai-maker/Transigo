@@ -29,7 +29,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#FFF3E0"
+        "backgroundColor": "#FFFFFF"
       },
       "package": "com.transigo.passenger"
     },
