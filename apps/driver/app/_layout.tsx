@@ -4,6 +4,7 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import * as Font from 'expo-font';
+import { Asset } from 'expo-asset';
 import { Ionicons } from '@expo/vector-icons';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -34,14 +35,24 @@ export default function RootLayout() {
                 await Font.loadAsync({
                     ...Ionicons.font,
                 });
+
+                // Pre-load critical images (onboarding, splash, logo)
+                await Asset.loadAsync([
+                    require('../assets/images/onboarding/driver.png'),
+                    require('../assets/images/onboarding/delivery.png'),
+                    require('../assets/images/onboarding/seller.png'),
+                    require('../assets/icon.png'),
+                    require('../assets/splash.png'),
+                ]);
             } catch (e) {
-                console.warn('Error loading fonts:', e);
+                console.warn('Error loading assets:', e);
             } finally {
                 setAppIsReady(true);
             }
         }
         prepare();
     }, []);
+
 
     const onLayoutRootView = useCallback(async () => {
         if (appIsReady) {
