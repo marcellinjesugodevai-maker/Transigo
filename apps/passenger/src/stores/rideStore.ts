@@ -235,18 +235,37 @@ export const PER_KM_RATE = 350;       // Prix par kilomètre
 export const PER_MIN_RATE = 50;       // Prix par minute
 export const MIN_FARE = 800;          // Prix minimum (même pour trajets très courts)
 
-// Heures de pointe (surge pricing)
-const PEAK_HOURS = {
-    morning: { start: 7, end: 9 },    // 7h-9h
-    evening: { start: 17, end: 19 },  // 17h-19h
-};
-export const SURGE_MULTIPLIER = 1.3;  // +30% en heure de pointe
-
-// Vérifier si c'est une heure de pointe
-const isPeakHour = (): boolean => {
+// ---------------------------------------------
+// DYNAMIC PRICING MULTIPLIERS (Competitive Grid)
+// ---------------------------------------------
+const getDynamicMultiplier = (): number => {
     const hour = new Date().getHours();
-    return (hour >= PEAK_HOURS.morning.start && hour < PEAK_HOURS.morning.end) ||
-        (hour >= PEAK_HOURS.evening.start && hour < PEAK_HOURS.evening.end);
+
+    // Nuit Profonde (22h - 05h) -> Chauffeurs rares
+    if (hour >= 22 || hour < 5) return 1.5;
+
+    // Tôt Matin (05h - 07h) -> Compétitif
+    if (hour >= 5 && hour < 7) return 1.1;
+
+    // Rush Matin (07h - 10h) -> Forte demande
+    if (hour >= 7 && hour < 10) return 1.3;
+
+    // Creux Matinée (10h - 12h) -> Baseline
+    if (hour >= 10 && hour < 12) return 1.0;
+
+    // Midi (12h - 14h) -> Déplacements lunch
+    if (hour >= 12 && hour < 14) return 1.1;
+
+    // Après-midi (14h - 17h) -> Baseline
+    if (hour >= 14 && hour < 17) return 1.0;
+
+    // Rush Soir (17h - 20h) -> Max demande
+    if (hour >= 17 && hour < 20) return 1.4;
+
+    // Soirée (20h - 22h) -> Sorties
+    if (hour >= 20 && hour < 22) return 1.2;
+
+    return 1.0;
 };
 
 // Fonction principale de calcul du prix
@@ -259,10 +278,8 @@ export const calculatePrice = (distance: number, duration: number, vehicleType: 
     // Appliquer le multiplicateur du véhicule
     basePrice = basePrice * option.priceMultiplier;
 
-    // Appliquer la majoration heure de pointe
-    if (isPeakHour()) {
-        basePrice = basePrice * SURGE_MULTIPLIER;
-    }
+    // Appliquer la tarification dynamique (Time-based Surge)
+    basePrice = basePrice * getDynamicMultiplier();
 
     // Appliquer le prix minimum
     basePrice = Math.max(basePrice, MIN_FARE);
