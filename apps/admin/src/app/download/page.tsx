@@ -180,9 +180,7 @@ export default function DownloadPage() {
                     <p className="text-gray-500 text-center max-w-xs mb-6">
                         Scannez ce QR code pour ouvrir cette page sur un autre appareil.
                     </p>
-                    <div className="flex items-center gap-2 text-sm text-[#00C853] font-semibold bg-[#00C853]/10 px-4 py-2 rounded-full">
-                        <span>{downloadUrl}</span>
-                    </div>
+
                 </div>
 
                 {/* Footer */}
