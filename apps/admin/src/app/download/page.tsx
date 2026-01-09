@@ -28,11 +28,11 @@ export default function DownloadPage() {
             <main className="relative z-10 container mx-auto px-4 py-12 flex flex-col items-center">
                 {/* Helper Nav */}
                 <nav className="absolute top-0 w-full flex justify-between items-center py-6 px-4">
-                    <div className="flex items-center gap-4">
-                        <div className="bg-white/10 p-2 rounded-xl backdrop-blur-md border border-white/20 shadow-lg">
-                            <img src="/logo.png" alt="TransiGo Logo" className="w-16 h-16 object-contain" />
+                    <div className="flex items-center gap-6">
+                        <div className="bg-[#F5F5DC] p-1 rounded-2xl backdrop-blur-md border border-white/20 shadow-lg">
+                            <img src="/logo.png" alt="TransiGo Logo" className="w-24 h-24 object-contain" />
                         </div>
-                        <div className="text-3xl font-bold tracking-tighter shadow-black drop-shadow-lg">Transi<span className="text-[#00C853]">Go</span></div>
+                        <div className="text-4xl font-bold tracking-tighter shadow-black drop-shadow-lg">Transi<span className="text-[#00C853]">Go</span></div>
                     </div>
                     <div className="bg-white/10 px-4 py-2 rounded-full text-sm font-semibold backdrop-blur-md border border-white/10">Bêta v1.0</div>
                 </nav>
