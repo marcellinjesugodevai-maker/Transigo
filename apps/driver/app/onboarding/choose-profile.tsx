@@ -25,6 +25,7 @@ const PROFILES = [
         description: 'Transport de passagers',
         color: COLORS.primary,
         gradient: ['#FF6B00', '#FF8C00'],
+        comingSoon: false,
     },
     {
         id: 'delivery',
@@ -34,6 +35,7 @@ const PROFILES = [
         description: 'Livraison colis & repas',
         color: COLORS.secondary,
         gradient: ['#00C853', '#00A344'],
+        comingSoon: false,
     },
     {
         id: 'seller',
@@ -42,7 +44,8 @@ const PROFILES = [
         title: 'Vendeur',
         description: 'Vendre sur TransiGo',
         color: COLORS.purple,
-        gradient: ['#9C27B0', '#7B1FA2'],
+        gradient: ['#9C9C9C', '#757575'], // Grayed out for coming soon
+        comingSoon: true,
     },
 ];
 
@@ -79,9 +82,10 @@ export default function ChooseProfileScreen() {
                 {PROFILES.map((profile) => (
                     <TouchableOpacity
                         key={profile.id}
-                        style={styles.profileCard}
-                        onPress={() => handleSelectProfile(profile.id as 'driver' | 'delivery' | 'seller')}
-                        activeOpacity={0.8}
+                        style={[styles.profileCard, profile.comingSoon && styles.profileCardDisabled]}
+                        onPress={() => !profile.comingSoon && handleSelectProfile(profile.id as 'driver' | 'delivery' | 'seller')}
+                        activeOpacity={profile.comingSoon ? 1 : 0.8}
+                        disabled={profile.comingSoon}
                     >
                         <LinearGradient
                             colors={profile.gradient as any}
@@ -92,10 +96,23 @@ export default function ChooseProfileScreen() {
                             <View style={styles.iconContainer}>
                                 <Text style={styles.emoji}>{profile.emoji}</Text>
                             </View>
-                            <Text style={styles.profileTitle}>{profile.title}</Text>
-                            <Text style={styles.profileDesc}>{profile.description}</Text>
+                            <View style={{ flex: 1 }}>
+                                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                    <Text style={styles.profileTitle}>{profile.title}</Text>
+                                    {profile.comingSoon && (
+                                        <View style={styles.comingSoonBadge}>
+                                            <Text style={styles.comingSoonText}>Bientôt</Text>
+                                        </View>
+                                    )}
+                                </View>
+                                <Text style={styles.profileDescInline}>{profile.description}</Text>
+                            </View>
                             <View style={styles.arrowContainer}>
-                                <Ionicons name="arrow-forward" size={20} color={COLORS.white} />
+                                <Ionicons
+                                    name={profile.comingSoon ? "lock-closed" : "arrow-forward"}
+                                    size={20}
+                                    color={COLORS.white}
+                                />
                             </View>
                         </LinearGradient>
                     </TouchableOpacity>
@@ -186,5 +203,25 @@ const styles = StyleSheet.create({
         color: COLORS.gray,
         fontSize: 14,
         marginBottom: 40,
+    },
+    profileCardDisabled: {
+        opacity: 0.85,
+    },
+    comingSoonBadge: {
+        backgroundColor: 'rgba(255,255,255,0.3)',
+        paddingHorizontal: 8,
+        paddingVertical: 3,
+        borderRadius: 10,
+        marginLeft: 8,
+    },
+    comingSoonText: {
+        color: COLORS.white,
+        fontSize: 10,
+        fontWeight: '600',
+    },
+    profileDescInline: {
+        fontSize: 13,
+        color: 'rgba(255,255,255,0.8)',
+        marginTop: 4,
     },
 });
