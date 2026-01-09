@@ -17,6 +17,10 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Icon from '@/components/Icon';
 import { COLORS, SPACING } from '@/constants';
 import { useRecurringRideStore, DayOfWeek } from '@/stores';
+import {
+    scheduleRecurringRideNotification,
+    requestNotificationPermissions
+} from '@/services/recurringRideNotificationService';
 
 const DAYS: { value: DayOfWeek; label: string }[] = [
     { value: 'mon', label: 'Lun' },
@@ -57,16 +61,27 @@ export default function CreateRecurringRideScreen() {
         return Math.round(vehicle.price * ridesPerMonth * discount);
     };
 
-    const handleCreate = () => {
+    const handleCreate = async () => {
         if (selectedDays.length === 0) {
             Alert.alert('Erreur', 'Sélectionnez au moins un jour');
             return;
         }
 
+        // Demander les permissions de notification
+        const hasPermission = await requestNotificationPermissions();
+        if (!hasPermission) {
+            Alert.alert(
+                'Permissions requises',
+                'Veuillez activer les notifications pour recevoir des rappels avant vos trajets.',
+                [{ text: 'OK' }]
+            );
+        }
+
         const monthlyPrice = calculateMonthlyPrice();
         const vehicle = VEHICLE_TYPES.find((v) => v.id === vehicleType)!;
 
-        addRide({
+        // Créer le trajet
+        const newRide = {
             pickup: {
                 address: pickup,
                 latitude: 5.3599,
@@ -83,13 +98,26 @@ export default function CreateRecurringRideScreen() {
             monthlyPrice,
             pricePerRide: vehicle.price,
             estimatedRidesPerMonth: selectedDays.length * 4,
-            status: 'active',
+            status: 'active' as const,
             startDate: new Date(),
-        });
+        };
+
+        addRide(newRide);
+
+        // Programmer les notifications pour ce trajet
+        // On récupère les trajets du store pour obtenir le nouvel ID
+        setTimeout(async () => {
+            const { rides } = useRecurringRideStore.getState();
+            const createdRide = rides[rides.length - 1];
+            if (createdRide) {
+                await scheduleRecurringRideNotification(createdRide);
+                console.log('Notifications programmées pour le trajet:', createdRide.id);
+            }
+        }, 100);
 
         Alert.alert(
-            'Trajet créé !',
-            `Votre trajet régulier est programmé. Paiement mensuel: ${monthlyPrice.toLocaleString('fr-FR')} F`,
+            '🎉 Trajet créé !',
+            `Votre trajet régulier est programmé.\n\n📅 ${selectedDays.length} jours/semaine\n⏰ Rappel 15 min avant\n💰 ${monthlyPrice.toLocaleString('fr-FR')} F/mois`,
             [{ text: 'OK', onPress: () => router.back() }]
         );
     };
