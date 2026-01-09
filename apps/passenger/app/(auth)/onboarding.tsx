@@ -1,3 +1,8 @@
+// =============================================
+// TRANSIGO PASSENGER - ONBOARDING SCREEN
+// Minimalist text-only version with progress bar
+// =============================================
+
 import { useState, useRef } from 'react';
 import {
     View,
@@ -10,183 +15,39 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING, RADIUS } from '@/constants';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 // =============================================
-// ILLUSTRATION COMPONENTS (Pure Code - No Images)
+// ONBOARDING DATA - Text only with native emojis
 // =============================================
 
-// Slide 1: Car + Location Pin
-const CarIllustration = () => (
-    <View style={illustrationStyles.container}>
-        <LinearGradient
-            colors={[COLORS.primary, COLORS.primaryDark]}
-            style={illustrationStyles.circle}
-        >
-            <View style={illustrationStyles.pinContainer}>
-                <Ionicons name="location" size={40} color="#fff" />
-            </View>
-            <View style={illustrationStyles.carContainer}>
-                <Ionicons name="car-sport" size={80} color="#fff" />
-            </View>
-            {/* Sparkles */}
-            <View style={[illustrationStyles.sparkle, { top: 30, right: 40 }]}>
-                <Ionicons name="sparkles" size={20} color="rgba(255,255,255,0.6)" />
-            </View>
-            <View style={[illustrationStyles.sparkle, { bottom: 50, left: 30 }]}>
-                <Ionicons name="star" size={16} color="rgba(255,255,255,0.5)" />
-            </View>
-        </LinearGradient>
-    </View>
-);
-
-// Slide 2: Group of People + Car
-const GroupIllustration = () => (
-    <View style={illustrationStyles.container}>
-        <LinearGradient
-            colors={[COLORS.secondary, COLORS.secondaryDark]}
-            style={illustrationStyles.circle}
-        >
-            <View style={illustrationStyles.peopleRow}>
-                <Ionicons name="person" size={36} color="#fff" />
-                <Ionicons name="person" size={44} color="#fff" style={{ marginHorizontal: -5 }} />
-                <Ionicons name="person" size={36} color="#fff" />
-            </View>
-            <View style={illustrationStyles.groupCarContainer}>
-                <Ionicons name="car" size={60} color="#fff" />
-            </View>
-            {/* Connection lines (simulated) */}
-            <View style={illustrationStyles.connectionLine} />
-        </LinearGradient>
-    </View>
-);
-
-// Slide 3: Multi-stop Route
-const RouteIllustration = () => (
-    <View style={illustrationStyles.container}>
-        <LinearGradient
-            colors={[COLORS.accent, '#00C853']}
-            style={illustrationStyles.circle}
-        >
-            {/* Route path (curved line simulated with Views) */}
-            <View style={illustrationStyles.routePath}>
-                <View style={illustrationStyles.routeSegment} />
-                <View style={[illustrationStyles.routeSegment, { transform: [{ rotate: '45deg' }], marginTop: -10 }]} />
-            </View>
-            {/* Location pins */}
-            <View style={[illustrationStyles.routePin, { top: 35, left: 50 }]}>
-                <Ionicons name="navigate" size={28} color="#fff" />
-            </View>
-            <View style={[illustrationStyles.routePin, { top: 80, right: 60 }]}>
-                <Ionicons name="pin" size={28} color="#fff" />
-            </View>
-            <View style={[illustrationStyles.routePin, { bottom: 40, right: 45 }]}>
-                <Ionicons name="flag" size={28} color="#fff" />
-            </View>
-        </LinearGradient>
-    </View>
-);
-
-const illustrationStyles = StyleSheet.create({
-    container: {
-        width: width * 0.6,
-        height: width * 0.6,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    circle: {
-        width: '100%',
-        height: '100%',
-        borderRadius: width * 0.3,
-        justifyContent: 'center',
-        alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.3,
-        shadowRadius: 20,
-        elevation: 15,
-    },
-    pinContainer: {
-        position: 'absolute',
-        top: 35,
-    },
-    carContainer: {
-        marginTop: 20,
-    },
-    sparkle: {
-        position: 'absolute',
-    },
-    peopleRow: {
-        flexDirection: 'row',
-        alignItems: 'flex-end',
-        marginBottom: 5,
-    },
-    groupCarContainer: {
-        marginTop: 5,
-    },
-    connectionLine: {
-        position: 'absolute',
-        width: 60,
-        height: 2,
-        backgroundColor: 'rgba(255,255,255,0.3)',
-        top: '40%',
-    },
-    routePath: {
-        position: 'absolute',
-        width: '60%',
-        height: '60%',
-    },
-    routeSegment: {
-        width: 80,
-        height: 4,
-        backgroundColor: 'rgba(255,255,255,0.4)',
-        borderRadius: 2,
-        marginVertical: 15,
-    },
-    routePin: {
-        position: 'absolute',
-        backgroundColor: 'rgba(255,255,255,0.2)',
-        borderRadius: 20,
-        padding: 8,
-    },
-});
-
-// =============================================
-// ONBOARDING DATA
-// =============================================
-
-interface OnboardingItem {
+interface OnboardingSlide {
     id: string;
-    illustration: React.ReactNode;
+    emoji: string;
     title: string;
     description: string;
-    color: string;
 }
 
-const onboardingData: OnboardingItem[] = [
+const SLIDES: OnboardingSlide[] = [
     {
         id: '1',
-        illustration: <CarIllustration />,
-        title: 'Réservez votre trajet',
-        description: 'Commandez un VTC en quelques clics. Simple, rapide et efficace.',
-        color: COLORS.primary,
+        emoji: '🚗',
+        title: 'Réservez en un clic',
+        description: 'Commandez votre VTC en quelques secondes. Simple, rapide et efficace.',
     },
     {
         id: '2',
-        illustration: <GroupIllustration />,
-        title: 'Courses de groupe',
-        description: 'Voyagez ensemble et partagez les frais avec vos amis ou collègues.',
-        color: COLORS.secondary,
+        emoji: '👥',
+        title: 'Voyagez en groupe',
+        description: 'Partagez les frais avec vos amis ou collègues. Économique et convivial.',
     },
     {
         id: '3',
-        illustration: <RouteIllustration />,
-        title: 'Arrêts multiples',
-        description: 'Ajoutez plusieurs destinations sur un seul trajet. Pratique et économique.',
-        color: COLORS.accent,
+        emoji: '📍',
+        title: 'Multi-destinations',
+        description: 'Ajoutez plusieurs arrêts sur votre trajet. Pratique pour vos courses.',
     },
 ];
 
@@ -200,7 +61,7 @@ export default function OnboardingScreen() {
     const scrollX = useRef(new Animated.Value(0)).current;
 
     const handleNext = () => {
-        if (currentIndex < onboardingData.length - 1) {
+        if (currentIndex < SLIDES.length - 1) {
             flatListRef.current?.scrollToIndex({ index: currentIndex + 1 });
             setCurrentIndex(currentIndex + 1);
         } else {
@@ -212,50 +73,39 @@ export default function OnboardingScreen() {
         router.replace('/(auth)/login');
     };
 
-    const renderItem = ({ item }: { item: OnboardingItem }) => (
+    const renderItem = ({ item }: { item: OnboardingSlide }) => (
         <View style={styles.slide}>
-            <View style={styles.illustrationContainer}>
-                {item.illustration}
-            </View>
+            {/* Emoji */}
+            <Text style={styles.emoji}>{item.emoji}</Text>
+
+            {/* Title */}
             <Text style={styles.title}>{item.title}</Text>
+
+            {/* Description */}
             <Text style={styles.description}>{item.description}</Text>
         </View>
     );
 
-    const renderDots = () => (
-        <View style={styles.dotsContainer}>
-            {onboardingData.map((item, index) => {
-                const inputRange = [
-                    (index - 1) * width,
-                    index * width,
-                    (index + 1) * width,
-                ];
-                const dotWidth = scrollX.interpolate({
-                    inputRange,
-                    outputRange: [10, 30, 10],
-                    extrapolate: 'clamp',
-                });
-                const backgroundColor = scrollX.interpolate({
-                    inputRange,
-                    outputRange: [COLORS.gray, item.color, COLORS.gray],
-                    extrapolate: 'clamp',
-                });
+    // Progress bar component
+    const ProgressBar = () => {
+        const progress = ((currentIndex + 1) / SLIDES.length) * 100;
 
-                return (
+        return (
+            <View style={styles.progressContainer}>
+                <View style={styles.progressBackground}>
                     <Animated.View
-                        key={index}
                         style={[
-                            styles.dot,
-                            {
-                                width: dotWidth,
-                                backgroundColor,
-                            },
+                            styles.progressFill,
+                            { width: `${progress}%` }
                         ]}
                     />
-                );
-            })}
-        </View>
-    );
+                </View>
+                <Text style={styles.progressText}>
+                    {currentIndex + 1} / {SLIDES.length}
+                </Text>
+            </View>
+        );
+    };
 
     return (
         <View style={styles.container}>
@@ -264,10 +114,15 @@ export default function OnboardingScreen() {
                 <Text style={styles.skipText}>Passer</Text>
             </TouchableOpacity>
 
+            {/* Progress Bar */}
+            <View style={styles.progressWrapper}>
+                <ProgressBar />
+            </View>
+
             {/* Slides */}
             <Animated.FlatList
                 ref={flatListRef}
-                data={onboardingData}
+                data={SLIDES}
                 renderItem={renderItem}
                 keyExtractor={(item) => item.id}
                 horizontal
@@ -283,31 +138,21 @@ export default function OnboardingScreen() {
                 }}
             />
 
-            {/* Dots */}
-            {renderDots()}
-
             {/* Next Button */}
-            <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
-                <LinearGradient
-                    colors={[COLORS.primary, COLORS.primaryDark]}
-                    style={styles.nextButtonGradient}
-                >
-                    <Text style={styles.nextButtonText}>
-                        {currentIndex === onboardingData.length - 1
-                            ? 'Commencer'
-                            : 'Suivant'}
-                    </Text>
-                    <Ionicons
-                        name={
-                            currentIndex === onboardingData.length - 1
-                                ? 'checkmark'
-                                : 'arrow-forward'
-                        }
-                        size={24}
-                        color="#fff"
-                    />
-                </LinearGradient>
-            </TouchableOpacity>
+            <View style={styles.bottomSection}>
+                <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
+                    <LinearGradient
+                        colors={['#00C853', '#00A344']}
+                        style={styles.nextButtonGradient}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 0 }}
+                    >
+                        <Text style={styles.nextButtonText}>
+                            {currentIndex === SLIDES.length - 1 ? 'Commencer' : 'Suivant'}
+                        </Text>
+                    </LinearGradient>
+                </TouchableOpacity>
+            </View>
         </View>
     );
 }
@@ -320,67 +165,80 @@ const styles = StyleSheet.create({
     skipButton: {
         position: 'absolute',
         top: 60,
-        right: 20,
+        right: 24,
         zIndex: 10,
-        padding: 10,
+        padding: 8,
     },
     skipText: {
-        fontSize: 16,
+        fontSize: 15,
         fontWeight: '500',
-        color: COLORS.gray || '#9E9E9E',
+        color: COLORS.gray || '#757575',
+    },
+    progressWrapper: {
+        paddingTop: 100,
+        paddingHorizontal: 32,
+    },
+    progressContainer: {
+        alignItems: 'center',
+    },
+    progressBackground: {
+        width: '100%',
+        height: 6,
+        backgroundColor: 'rgba(0, 200, 83, 0.2)',
+        borderRadius: 3,
+        overflow: 'hidden',
+    },
+    progressFill: {
+        height: '100%',
+        backgroundColor: '#00C853',
+        borderRadius: 3,
+    },
+    progressText: {
+        marginTop: 8,
+        fontSize: 14,
+        color: COLORS.gray || '#757575',
+        fontWeight: '500',
     },
     slide: {
         width,
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        paddingHorizontal: SPACING?.['2xl'] || 32,
+        paddingHorizontal: 40,
     },
-    illustrationContainer: {
-        marginBottom: SPACING?.['2xl'] || 32,
+    emoji: {
+        fontSize: 80,
+        marginBottom: 32,
     },
     title: {
-        fontSize: 28,
+        fontSize: 32,
         fontWeight: 'bold',
         color: COLORS.text || '#212121',
         textAlign: 'center',
-        marginBottom: SPACING?.lg || 16,
+        marginBottom: 16,
     },
     description: {
-        fontSize: 16,
+        fontSize: 18,
         color: COLORS.textSecondary || '#757575',
         textAlign: 'center',
-        lineHeight: 26,
-        paddingHorizontal: SPACING?.lg || 16,
+        lineHeight: 28,
     },
-    dotsContainer: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: SPACING?.['2xl'] || 32,
-    },
-    dot: {
-        height: 10,
-        borderRadius: 5,
-        marginHorizontal: 5,
+    bottomSection: {
+        paddingHorizontal: 32,
+        paddingBottom: 50,
     },
     nextButton: {
-        marginHorizontal: SPACING?.['2xl'] || 32,
-        marginBottom: SPACING?.['3xl'] || 48,
-        borderRadius: RADIUS?.xl || 16,
+        borderRadius: 16,
         overflow: 'hidden',
-        shadowColor: COLORS.primary,
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.4,
-        shadowRadius: 15,
+        shadowColor: '#00C853',
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.35,
+        shadowRadius: 12,
         elevation: 8,
     },
     nextButtonGradient: {
-        flexDirection: 'row',
-        justifyContent: 'center',
+        paddingVertical: 18,
         alignItems: 'center',
-        paddingVertical: SPACING?.lg || 16,
-        gap: SPACING?.sm || 8,
     },
     nextButtonText: {
         fontSize: 18,

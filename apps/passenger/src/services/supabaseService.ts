@@ -194,3 +194,52 @@ export const rideService = {
         return { rides: data, error };
     },
 };
+
+// ============================================
+// Service: Push Notifications
+// ============================================
+export const pushTokenService = {
+    // Sauvegarder ou mettre à jour le push token
+    savePushToken: async (userId: string, token: string) => {
+        // Vérifier si le token existe déjà
+        const { data: existing } = await supabase
+            .from('push_tokens')
+            .select('id')
+            .eq('token', token)
+            .single();
+
+        if (existing) {
+            // Mettre à jour le token existant
+            const { error } = await supabase
+                .from('push_tokens')
+                .update({
+                    user_id: userId,
+                    is_active: true,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('token', token);
+            return { error };
+        } else {
+            // Créer un nouveau token
+            const { error } = await supabase
+                .from('push_tokens')
+                .insert({
+                    user_id: userId,
+                    token: token,
+                    app_type: 'passenger',
+                    device_type: 'android',
+                    is_active: true,
+                });
+            return { error };
+        }
+    },
+
+    // Désactiver un token (quand l'utilisateur se déconnecte)
+    deactivateToken: async (token: string) => {
+        const { error } = await supabase
+            .from('push_tokens')
+            .update({ is_active: false })
+            .eq('token', token);
+        return { error };
+    },
+};

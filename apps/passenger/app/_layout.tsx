@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
@@ -18,28 +18,27 @@ SplashScreen.preventAutoHideAsync();
 const queryClient = new QueryClient();
 
 export default function RootLayout() {
+    const [appIsReady, setAppIsReady] = useState(false);
     const { isLoading } = useAuthStore();
     const { colors, isDark } = useThemeStore();
 
     useEffect(() => {
         async function prepare() {
             try {
-                // Pre-load assets (only icon and splash - onboarding uses pure code now)
-                const imageAssets = [
+                // Pre-load fonts - THIS IS CRITICAL for icons
+                await Font.loadAsync({
+                    ...Ionicons.font,
+                });
+
+                // Pre-load essential images
+                await Asset.loadAsync([
                     require('../assets/icon.png'),
                     require('../assets/splash.png'),
-                ];
-
-                await Promise.all([
-                    ...imageAssets.map(image => Asset.fromModule(image).downloadAsync()),
-                    Font.loadAsync(Ionicons.font),
                 ]);
             } catch (e) {
-                console.warn(e);
+                console.warn('Error loading assets:', e);
             } finally {
-                if (!isLoading) {
-                    await SplashScreen.hideAsync();
-                }
+                setAppIsReady(true);
             }
         }
 
@@ -50,20 +49,29 @@ export default function RootLayout() {
         if (user && user.id === '1') {
             logout();
         }
-    }, [isLoading]);
+    }, []);
 
+    const onLayoutRootView = useCallback(async () => {
+        if (appIsReady && !isLoading) {
+            await SplashScreen.hideAsync();
+        }
+    }, [appIsReady, isLoading]);
+
+    // BLOCK RENDERING until fonts are loaded
+    if (!appIsReady) {
+        return null; // Keep showing splash screen
+    }
 
     if (isLoading) {
         return (
             <View style={{ flex: 1, backgroundColor: '#FFCC80', justifyContent: 'center', alignItems: 'center' }}>
                 <Text style={{ fontSize: 20, color: '#1A1A1A' }}>Initialisation TransiGo...</Text>
-                <Text style={{ marginTop: 20, color: 'red' }}>Debug: isLoading=true</Text>
             </View>
         );
     }
 
     return (
-        <GestureHandlerRootView style={{ flex: 1 }}>
+        <GestureHandlerRootView style={{ flex: 1 }} onLayout={onLayoutRootView}>
             <QueryClientProvider client={queryClient}>
                 <StatusBar style={isDark ? "light" : "dark"} />
                 <Stack
@@ -94,4 +102,3 @@ export default function RootLayout() {
         </GestureHandlerRootView>
     );
 }
-
