@@ -24,13 +24,10 @@ export default function RootLayout() {
     useEffect(() => {
         async function prepare() {
             try {
-                // Pre-load assets
+                // Pre-load assets (only icon and splash - onboarding uses pure code now)
                 const imageAssets = [
                     require('../assets/icon.png'),
                     require('../assets/splash.png'),
-                    require('../assets/onboarding/travel.png'),
-                    require('../assets/onboarding/negotiate.png'),
-                    require('../assets/onboarding/safety.png'),
                 ];
 
                 await Promise.all([
