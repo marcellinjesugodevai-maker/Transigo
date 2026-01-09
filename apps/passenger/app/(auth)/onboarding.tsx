@@ -1,7 +1,3 @@
-// =============================================
-// TRANSIGO - ONBOARDING SCREEN
-// =============================================
-
 import { useState, useRef } from 'react';
 import {
     View,
@@ -11,8 +7,11 @@ import {
     FlatList,
     TouchableOpacity,
     Animated,
-    Image,
 } from 'react-native';
+import { Image } from 'expo-image';
+
+
+
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import Icon from '@/components/Icon';
@@ -31,7 +30,7 @@ interface OnboardingItem {
 const onboardingData: OnboardingItem[] = [
     {
         id: '1',
-        image: { uri: 'https://zndgvloyaitopczhjddq.supabase.co/storage/v1/object/public/app-assets/onboarding/travel.png' },
+        image: require('../../assets/onboarding/travel.png'),
         title: 'Voyagez en Toute Liberté',
         description:
             'Commandez une course en quelques secondes...',
@@ -39,7 +38,7 @@ const onboardingData: OnboardingItem[] = [
     },
     {
         id: '2',
-        image: { uri: 'https://zndgvloyaitopczhjddq.supabase.co/storage/v1/object/public/app-assets/onboarding/negotiate.png?v=2' },
+        image: require('../../assets/onboarding/negotiate.png'),
         title: 'Négociez Votre Prix',
         description:
             'Proposez votre prix en FCFA et choisissez la meilleure offre...',
@@ -47,13 +46,14 @@ const onboardingData: OnboardingItem[] = [
     },
     {
         id: '3',
-        image: { uri: 'https://zndgvloyaitopczhjddq.supabase.co/storage/v1/object/public/app-assets/onboarding/safety.png' },
+        image: require('../../assets/onboarding/safety.png'),
         title: 'Sécurité Maximale',
         description:
             'Voyagez en toute sérénité avec nos chauffeurs vérifiés et certifiés.',
         color: COLORS.primary,
     },
 ];
+
 
 export default function OnboardingScreen() {
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -79,7 +79,7 @@ export default function OnboardingScreen() {
                 <Image
                     source={item.image}
                     style={styles.illustration}
-                    resizeMode="contain"
+                    contentFit="contain"
                 />
             </View>
             <Text style={styles.title}>{item.title}</Text>

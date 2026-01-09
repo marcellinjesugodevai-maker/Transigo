@@ -7,6 +7,10 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAuthStore, useThemeStore } from '@/stores';
 import { View, Text } from 'react-native';
 
+import { Asset } from 'expo-asset';
+import * as Font from 'expo-font';
+import { Ionicons } from '@expo/vector-icons';
+
 // Prevent splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync();
 
@@ -18,17 +22,39 @@ export default function RootLayout() {
     const { colors, isDark } = useThemeStore();
 
     useEffect(() => {
-        console.log("[RootLayout] isLoading:", isLoading);
-        if (!isLoading) {
-            SplashScreen.hideAsync();
+        async function prepare() {
+            try {
+                // Pre-load assets
+                const imageAssets = [
+                    require('../assets/icon.png'),
+                    require('../assets/splash.png'),
+                    require('../assets/onboarding/travel.png'),
+                    require('../assets/onboarding/negotiate.png'),
+                    require('../assets/onboarding/safety.png'),
+                ];
+
+                await Promise.all([
+                    ...imageAssets.map(image => Asset.fromModule(image).downloadAsync()),
+                    Font.loadAsync(Ionicons.font),
+                ]);
+            } catch (e) {
+                console.warn(e);
+            } finally {
+                if (!isLoading) {
+                    await SplashScreen.hideAsync();
+                }
+            }
         }
 
-        // Fix legacy mock user: id='1' is invalid for Supabase UUID
+        prepare();
+
+        // Fix legacy mock user
         const { user, logout } = useAuthStore.getState();
         if (user && user.id === '1') {
             logout();
         }
     }, [isLoading]);
+
 
     if (isLoading) {
         return (
