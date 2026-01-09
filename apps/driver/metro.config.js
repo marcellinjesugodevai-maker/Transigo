@@ -6,8 +6,8 @@ const workspaceRoot = path.resolve(projectRoot, '../..');
 
 const config = getDefaultConfig(projectRoot);
 
-// 1. Watch all files within the monorepo
-config.watchFolders = [workspaceRoot];
+// 1. Watch all files within the monorepo (extend defaults, don't replace)
+config.watchFolders = [...(config.watchFolders || []), workspaceRoot];
 
 // 2. Resolve modules from both local and workspace root
 config.resolver.nodeModulesPaths = [
@@ -15,8 +15,8 @@ config.resolver.nodeModulesPaths = [
     path.resolve(workspaceRoot, 'node_modules'),
 ];
 
-// 3. Ensure TS/TSX support
-config.resolver.sourceExts = ['js', 'jsx', 'json', 'ts', 'tsx', 'cjs', 'mjs'];
-config.resolver.assetExts = ['ttf', 'otf', 'png', 'jpg', 'jpeg', 'svg'];
+// 3. Ensure TS/TSX support and add custom extensions (extend defaults)
+config.resolver.sourceExts = [...config.resolver.sourceExts, 'cjs', 'mjs'];
+config.resolver.assetExts = [...config.resolver.assetExts, 'fcfa'];
 
 module.exports = config;
