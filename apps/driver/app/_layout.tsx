@@ -36,11 +36,8 @@ export default function RootLayout() {
                     ...Ionicons.font,
                 });
 
-                // Pre-load critical images (onboarding, splash, logo)
+                // Pre-load essential app assets only (onboarding uses pure code now)
                 await Asset.loadAsync([
-                    require('../assets/images/onboarding/driver.png'),
-                    require('../assets/images/onboarding/delivery.png'),
-                    require('../assets/images/onboarding/seller.png'),
                     require('../assets/icon.png'),
                     require('../assets/splash.png'),
                 ]);
