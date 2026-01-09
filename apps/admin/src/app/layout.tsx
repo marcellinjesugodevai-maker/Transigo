@@ -72,6 +72,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
     return (
         <html lang="fr" suppressHydrationWarning={true}>
+            <head>
+                <link rel="icon" href="/logo.png" />
+            </head>
             <body style={{ margin: 0, fontFamily: 'system-ui, -apple-system, sans-serif', display: 'flex', minHeight: '100vh', flexDirection: isPublicPage ? 'column' : 'row' }}>
                 {/* Sidebar */}
                 {!isPublicPage && (
