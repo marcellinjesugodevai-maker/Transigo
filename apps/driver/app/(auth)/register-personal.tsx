@@ -1,23 +1,82 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, Image, Alert } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import { useDriverRegStore } from '../../src/stores/driverRegStore';
 
 const COLORS = { primary: '#FF6B00', secondary: '#00C853', secondaryDark: '#00A344', white: '#FFFFFF', black: '#1A1A2E', gray100: '#F5F5F5', gray600: '#757575' };
 
 export default function RegisterPersonalScreen() {
     const { data, updateData } = useDriverRegStore();
-
-    // Local state for validation feedback
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+    const pickImage = async () => {
+        // Demander la permission
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== 'granted') {
+            Alert.alert(
+                'Permission requise',
+                'Nous avons besoin d\'accéder à votre galerie pour ajouter votre photo de profil.'
+            );
+            return;
+        }
+
+        // Ouvrir le sélecteur d'images
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 0.8,
+        });
+
+        if (!result.canceled && result.assets[0]) {
+            updateData({ profilePhotoUri: result.assets[0].uri });
+        }
+    };
+
+    const takePhoto = async () => {
+        // Demander la permission caméra
+        const { status } = await ImagePicker.requestCameraPermissionsAsync();
+        if (status !== 'granted') {
+            Alert.alert(
+                'Permission requise',
+                'Nous avons besoin d\'accéder à votre caméra pour prendre votre photo de profil.'
+            );
+            return;
+        }
+
+        // Ouvrir la caméra
+        const result = await ImagePicker.launchCameraAsync({
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 0.8,
+        });
+
+        if (!result.canceled && result.assets[0]) {
+            updateData({ profilePhotoUri: result.assets[0].uri });
+        }
+    };
+
+    const showPhotoOptions = () => {
+        Alert.alert(
+            'Photo de profil',
+            'Choisissez une option',
+            [
+                { text: 'Prendre une photo', onPress: takePhoto },
+                { text: 'Choisir dans la galerie', onPress: pickImage },
+                { text: 'Annuler', style: 'cancel' },
+            ]
+        );
+    };
 
     const validate = () => {
         const newErrors: { [key: string]: string } = {};
         if (!data.firstName) newErrors.firstName = 'Prénom requis';
         if (!data.lastName) newErrors.lastName = 'Nom requis';
         if (!data.phone || data.phone.length < 10) newErrors.phone = 'Numéro invalide';
+        if (!data.profilePhotoUri) newErrors.photo = 'Photo de profil requise';
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -48,10 +107,35 @@ export default function RegisterPersonalScreen() {
             </View>
             <Text style={styles.stepTitle}>Informations Personnelles</Text>
 
-            <ScrollView contentContainerStyle={styles.form}>
+            <ScrollView contentContainerStyle={styles.form} showsVerticalScrollIndicator={false}>
+
+                {/* Photo de profil */}
+                <View style={styles.photoSection}>
+                    <Text style={styles.label}>Photo de profil <Text style={{ color: 'red' }}>*</Text></Text>
+                    <TouchableOpacity
+                        style={[styles.photoContainer, errors.photo && styles.photoError]}
+                        onPress={showPhotoOptions}
+                    >
+                        {data.profilePhotoUri ? (
+                            <Image source={{ uri: data.profilePhotoUri }} style={styles.profilePhoto} />
+                        ) : (
+                            <View style={styles.photoPlaceholder}>
+                                <Ionicons name="camera" size={40} color={COLORS.gray600} />
+                                <Text style={styles.photoText}>Ajouter une photo</Text>
+                            </View>
+                        )}
+                        <View style={styles.editBadge}>
+                            <Ionicons name="pencil" size={16} color={COLORS.white} />
+                        </View>
+                    </TouchableOpacity>
+                    {errors.photo && <Text style={styles.errorText}>{errors.photo}</Text>}
+                    <Text style={styles.photoHint}>
+                        Cette photo sera visible par les passagers
+                    </Text>
+                </View>
 
                 <View style={styles.inputGroup}>
-                    <Text style={styles.label}>Prénom</Text>
+                    <Text style={styles.label}>Prénom <Text style={{ color: 'red' }}>*</Text></Text>
                     <TextInput
                         style={[styles.input, errors.firstName && styles.inputError]}
                         placeholder="Moussa"
@@ -62,7 +146,7 @@ export default function RegisterPersonalScreen() {
                 </View>
 
                 <View style={styles.inputGroup}>
-                    <Text style={styles.label}>Nom</Text>
+                    <Text style={styles.label}>Nom <Text style={{ color: 'red' }}>*</Text></Text>
                     <TextInput
                         style={[styles.input, errors.lastName && styles.inputError]}
                         placeholder="Koné"
@@ -73,7 +157,7 @@ export default function RegisterPersonalScreen() {
                 </View>
 
                 <View style={styles.inputGroup}>
-                    <Text style={styles.label}>Numéro de téléphone</Text>
+                    <Text style={styles.label}>Numéro de téléphone <Text style={{ color: 'red' }}>*</Text></Text>
                     <View style={styles.phoneContainer}>
                         <View style={styles.phonePrefix}>
                             <Text style={styles.phonePrefixText}>🇨🇮 +225</Text>
@@ -109,6 +193,7 @@ export default function RegisterPersonalScreen() {
                     />
                 </View>
 
+                <View style={{ height: 100 }} />
             </ScrollView>
 
             <View style={styles.footer}>
@@ -138,6 +223,36 @@ const styles = StyleSheet.create({
     stepTitle: { fontSize: 22, fontWeight: 'bold', textAlign: 'center', marginBottom: 20, paddingHorizontal: 20 },
 
     form: { paddingHorizontal: 24, paddingBottom: 100 },
+
+    // Photo Section
+    photoSection: { alignItems: 'center', marginBottom: 24 },
+    photoContainer: {
+        width: 120,
+        height: 120,
+        borderRadius: 60,
+        backgroundColor: COLORS.gray100,
+        overflow: 'hidden',
+        position: 'relative',
+    },
+    photoError: { borderWidth: 2, borderColor: 'red' },
+    profilePhoto: { width: '100%', height: '100%' },
+    photoPlaceholder: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+    photoText: { fontSize: 12, color: COLORS.gray600, marginTop: 4 },
+    editBadge: {
+        position: 'absolute',
+        bottom: 4,
+        right: 4,
+        backgroundColor: COLORS.secondary,
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 2,
+        borderColor: COLORS.white,
+    },
+    photoHint: { fontSize: 12, color: COLORS.gray600, marginTop: 8, textAlign: 'center' },
+
     inputGroup: { marginBottom: 16 },
     label: { fontSize: 14, color: COLORS.gray600, marginBottom: 8, fontWeight: '500' },
     input: { backgroundColor: COLORS.gray100, borderRadius: 12, padding: 16, fontSize: 16, color: COLORS.black },

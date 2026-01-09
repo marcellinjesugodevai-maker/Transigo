@@ -13,6 +13,7 @@ import {
     Dimensions,
     Linking,
     Alert,
+    Image,
 } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -24,6 +25,35 @@ import { getTranslation } from '@/i18n/translations';
 import { locationService } from '@/services/locationService';
 
 const { width, height } = Dimensions.get('window');
+
+// Helper function to convert color names to hex
+const getColorHex = (colorName: string): string => {
+    const colors: Record<string, string> = {
+        'blanc': '#FFFFFF',
+        'white': '#FFFFFF',
+        'noir': '#000000',
+        'black': '#000000',
+        'gris': '#808080',
+        'grise': '#808080',
+        'grey': '#808080',
+        'gray': '#808080',
+        'rouge': '#FF0000',
+        'red': '#FF0000',
+        'bleu': '#0066FF',
+        'blue': '#0066FF',
+        'vert': '#00AA00',
+        'green': '#00AA00',
+        'jaune': '#FFD700',
+        'yellow': '#FFD700',
+        'orange': '#FF9800',
+        'marron': '#8B4513',
+        'brown': '#8B4513',
+        'beige': '#F5F5DC',
+        'argent': '#C0C0C0',
+        'silver': '#C0C0C0',
+    };
+    return colors[colorName.toLowerCase()] || '#808080';
+};
 
 export default function RideTrackingScreen() {
     const params = useLocalSearchParams();
@@ -249,6 +279,7 @@ export default function RideTrackingScreen() {
         vehicleModel: 'Corolla',
         vehicleColor: 'Grise',
         vehiclePlate: 'AB-1234-CI',
+        profilePhotoUrl: null, // URL from Supabase Storage
     };
 
     return (
@@ -312,9 +343,16 @@ export default function RideTrackingScreen() {
                 {/* Infos chauffeur */}
                 <View style={[styles.driverCard, { backgroundColor: isDark ? '#252525' : colors.background }]}>
                     <View style={styles.driverInfo}>
-                        {/* Avatar */}
+                        {/* Avatar - Photo de profil ou emoji fallback */}
                         <View style={styles.driverAvatar}>
-                            <Text style={styles.avatarEmoji}>👨🏾</Text>
+                            {driver.profilePhotoUrl ? (
+                                <Image
+                                    source={{ uri: driver.profilePhotoUrl }}
+                                    style={styles.profilePhoto}
+                                />
+                            ) : (
+                                <Text style={styles.avatarEmoji}>👨🏾</Text>
+                            )}
                         </View>
 
                         {/* Détails */}
@@ -350,16 +388,23 @@ export default function RideTrackingScreen() {
                         </View>
                     </View>
 
-                    {/* Véhicule */}
+                    {/* Véhicule avec couleur */}
                     <View style={[styles.vehicleInfo, { borderTopColor: isDark ? '#333' : '#F0F0F0' }]}>
                         <Text style={styles.vehicleEmoji}>🚗</Text>
                         <View style={styles.vehicleDetails}>
                             <Text style={[styles.vehicleName, { color: colors.text }]}>
-                                {driver.vehicleBrand} {driver.vehicleModel} • {driver.vehicleColor}
+                                {driver.vehicleBrand} {driver.vehicleModel}
                             </Text>
-                            <Text style={[styles.vehiclePlate, { color: COLORS.primary }]}>
-                                {driver.vehiclePlate}
-                            </Text>
+                            <View style={styles.vehicleRow}>
+                                <View style={[styles.colorBadge, { backgroundColor: getColorHex(driver.vehicleColor) }]} />
+                                <Text style={[styles.vehicleColorText, { color: colors.textSecondary }]}>
+                                    {driver.vehicleColor}
+                                </Text>
+                                <Text style={styles.vehicleSeparator}>•</Text>
+                                <Text style={[styles.vehiclePlate, { color: COLORS.primary }]}>
+                                    {driver.vehiclePlate}
+                                </Text>
+                            </View>
                         </View>
                     </View>
                 </View>
@@ -575,11 +620,35 @@ const styles = StyleSheet.create({
     },
     vehicleName: {
         fontSize: 14,
-        marginBottom: 2,
+        marginBottom: 4,
+    },
+    vehicleRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    colorBadge: {
+        width: 14,
+        height: 14,
+        borderRadius: 7,
+        marginRight: 6,
+        borderWidth: 1,
+        borderColor: 'rgba(0,0,0,0.1)',
+    },
+    vehicleColorText: {
+        fontSize: 13,
+    },
+    vehicleSeparator: {
+        marginHorizontal: 8,
+        color: '#999',
     },
     vehiclePlate: {
-        fontSize: 16,
+        fontSize: 14,
         fontWeight: 'bold',
+    },
+    profilePhoto: {
+        width: '100%',
+        height: '100%',
+        borderRadius: 30,
     },
 
     // Buttons

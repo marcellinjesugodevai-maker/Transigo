@@ -10,6 +10,7 @@ export interface DriverRegistrationData {
     phone: string;
     email: string;
     city: string;
+    profilePhotoUri: string | null;  // Photo de profil (URI local avant upload)
 
     // Vehicle Info
     vehicleType: 'standard' | 'moto' | 'van';
@@ -48,6 +49,7 @@ const INITIAL_DATA: DriverRegistrationData = {
     phone: '',
     email: '',
     city: 'Abidjan',
+    profilePhotoUri: null,
 
     vehicleType: 'standard',
     vehicleBrand: '',
