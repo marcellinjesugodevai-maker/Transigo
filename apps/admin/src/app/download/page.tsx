@@ -119,8 +119,8 @@ export default function DownloadPage() {
                         </ul>
 
                         <a
-                            href="/apks/transigo-passenger.apk"
-                            download="TransiGo-Passenger.apk"
+                            href="/apks/transigo-passenger-v1-1.apk"
+                            download="TransiGo-Passenger-v1-1.apk"
                             className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 px-6 rounded-xl flex items-center justify-center gap-3 transition-colors shadow-lg shadow-blue-600/20 group-hover:shadow-blue-600/40"
                         >
                             <Download size={24} />
@@ -158,8 +158,8 @@ export default function DownloadPage() {
                         </ul>
 
                         <a
-                            href="/apks/transigo-business.apk"
-                            download="TransiGo-Business.apk"
+                            href="/apks/transigo-business-v1-1.apk"
+                            download="TransiGo-Business-v1-1.apk"
                             className="w-full bg-gradient-to-r from-[#00C853] to-[#009624] hover:from-[#00E676] hover:to-[#00C853] text-white font-bold py-4 px-6 rounded-xl flex items-center justify-center gap-3 transition-all shadow-lg shadow-green-600/20 group-hover:shadow-green-600/40"
                         >
                             <Download size={24} />
