@@ -4,7 +4,7 @@
     "slug": "transi-go-passenger",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/icon-v2.png",
     "scheme": "transigo",
     "userInterfaceStyle": "automatic",
     "splash": {
@@ -28,7 +28,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/adaptive-icon-v2.png",
         "backgroundColor": "#FFFFFF"
       },
       "package": "com.transigo.passenger"
