@@ -20,11 +20,14 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Icon from '@/components/Icon';
 import OSMMap from '@/components/OSMMap';
 import * as Location from 'expo-location';
+import * as Speech from 'expo-speech';
 import { COLORS, SPACING, RADIUS, DEFAULT_LOCATION } from '@/constants';
 import { useAuthStore, useLanguageStore, useThemeStore } from '@/stores';
 import { getTranslation } from '@/i18n/translations';
 import { locationService, LocationSearchResult } from '@/services/locationService';
 import { rideService } from '@/services/supabaseService';
+import { carpoolService } from '@/services/carpoolService';
+import { SharedRide } from '@/stores/carpoolStore';
 
 interface NearbyDriver {
     id: string;
@@ -92,6 +95,15 @@ export default function HomeScreen() {
     const [routeCoords, setRouteCoords] = useState<{ latitude: number, longitude: number }[]>([]);
     const [tripInfo, setTripInfo] = useState<{ distance: number, duration: number } | null>(null);
     const [pickupAddress, setPickupAddress] = useState('Ma position');
+
+    // Covoiturage dynamique
+    const [sharedRides, setSharedRides] = useState<SharedRide[]>([]);
+    const [selectedSharedRide, setSelectedSharedRide] = useState<SharedRide | null>(null);
+    const [isJoining, setIsJoining] = useState(false);
+    const [activeToast, setActiveToast] = useState<{ message: string; sub: string } | null>(null);
+    const [isFlashActive, setIsFlashActive] = useState(false);
+    const flashAnim = useRef(new Animated.Value(0)).current;
+    const spokenRides = useRef<Set<string>>(new Set());
 
     // Draggable button position
     const buttonPosition = useRef(new Animated.ValueXY({ x: 0, y: 0 })).current;
@@ -174,11 +186,89 @@ export default function HomeScreen() {
         fetchRealDrivers();
         const interval = setInterval(fetchRealDrivers, 10000); // Update every 10s
 
+        // Charger les trajets de covoiturage disponibles
+        const fetchSharedRides = async () => {
+            try {
+                const { rides } = await carpoolService.findAvailableRides(
+                    userLocation.latitude, userLocation.longitude, 10 // Portée 10km
+                );
+                // Filtrer ceux qui ont une trajectoire
+                if (rides) {
+                    setSharedRides(rides.filter(r => r.route_trajectory && r.route_trajectory.length > 0));
+                }
+            } catch (e) {
+                console.log('Error fetching shared rides:', e);
+            }
+        };
+
+        fetchSharedRides();
+        const sharedInterval = setInterval(fetchSharedRides, 15000);
+
         return () => {
             if (subscription) subscription.remove();
             clearInterval(interval);
+            clearInterval(sharedInterval);
         };
-    }, []);
+    }, [userLocation.latitude, userLocation.longitude]);
+
+    // Notification automatique de proximité covoiturage
+    useEffect(() => {
+        if (sharedRides.length > 0) {
+            let activeNearest: { ride: SharedRide, dist: number } | null = null;
+
+            sharedRides.forEach(ride => {
+                const dist = calculateDistance(
+                    userLocation.latitude, userLocation.longitude,
+                    ride.current_lat || ride.pickup_lat, ride.current_lon || ride.pickup_lon
+                );
+                if (dist <= 1.5 && (!activeNearest || dist < activeNearest.dist)) {
+                    activeNearest = { ride, dist };
+                }
+            });
+
+            if (activeNearest && !selectedSharedRide) {
+                const { ride, dist } = activeNearest as { ride: SharedRide, dist: number };
+                setActiveToast({
+                    message: language === 'fr' ? "Covoiturage à proximité !" : "Carpool nearby!",
+                    sub: `${ride.driver_name || 'Un chauffeur'} ${language === 'fr' ? 'approche' : 'is approaching'}`
+                });
+
+                // VOIX : Annonce si distance < 0.8km et pas encore dit
+                if (dist <= 0.8 && !spokenRides.current.has(ride.id)) {
+                    const text = language === 'fr'
+                        ? `Le chauffeur ${ride.driver_name || ''} arrive. Il est à moins de huit cent mètres.`
+                        : `Driver ${ride.driver_name || ''} is approaching. Less than eight hundred meters away.`;
+                    Speech.speak(text, { language: language === 'fr' ? 'fr-FR' : 'en-US' });
+                    spokenRides.current.add(ride.id);
+                }
+
+                // Auto-hide toast after 8s
+                setTimeout(() => setActiveToast(null), 8000);
+            }
+        }
+    }, [sharedRides.length]);
+
+    // Animation Flash Clignotant
+    useEffect(() => {
+        if (isFlashActive) {
+            Animated.loop(
+                Animated.sequence([
+                    Animated.timing(flashAnim, { toValue: 1, duration: 500, useNativeDriver: true }),
+                    Animated.timing(flashAnim, { toValue: 0, duration: 500, useNativeDriver: true }),
+                ])
+            ).start();
+        } else {
+            flashAnim.setValue(0);
+        }
+    }, [isFlashActive]);
+    const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+        const R = 6371;
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+    };
 
     // Gestion de la destination via commande vocale
     useEffect(() => {
@@ -254,6 +344,41 @@ export default function HomeScreen() {
         setZoom(13);
     };
 
+    const handleRoutePress = (id: string) => {
+        const ride = sharedRides.find(r => r.id === id);
+        if (ride) {
+            setSelectedSharedRide(ride);
+        }
+    };
+
+    const handleJoinIntercept = async () => {
+        if (!selectedSharedRide || !user) return;
+        setIsJoining(true);
+        try {
+            const { success, error } = await carpoolService.joinRide(
+                selectedSharedRide.id,
+                user.id,
+                user.phone || '',
+                user.firstName,
+                { address: 'Interception', lat: userLocation.latitude, lon: userLocation.longitude },
+                { address: selectedSharedRide.dropoff_address, lat: selectedSharedRide.dropoff_lat, lon: selectedSharedRide.dropoff_lon }
+            );
+
+            if (success) {
+                router.push({
+                    pathname: '/ride-tracking',
+                    params: { rideId: selectedSharedRide.id, type: 'shared' }
+                });
+            } else {
+                alert(error || "Erreur lors de la jonction");
+            }
+        } catch (e) {
+            console.error("Join error:", e);
+        }
+        setIsJoining(false);
+        setSelectedSharedRide(null);
+    };
+
     return (
         <View style={[styles.container, { backgroundColor: colors.background }]}>
             <OSMMap
@@ -271,7 +396,29 @@ export default function HomeScreen() {
                     ...(destinationMarker ? [destinationMarker] : [])
                 ]}
                 routeCoordinates={routeCoords}
+                sharedRoutes={sharedRides.map(r => ({
+                    id: r.id,
+                    coordinates: r.route_trajectory as any,
+                    color: '#2E7D32'
+                }))}
+                onRoutePress={handleRoutePress}
             />
+
+            {/* Toast Alerte de Proximité */}
+            {activeToast && (
+                <View style={styles.toastContainer}>
+                    <LinearGradient colors={['#4CAF50', '#2E7D32']} style={styles.toastGradient}>
+                        <Icon name="notifications" size={20} color={COLORS.white} />
+                        <View style={styles.toastTextContainer}>
+                            <Text style={styles.toastTitle}>{activeToast.message}</Text>
+                            <Text style={styles.toastSub}>{activeToast.sub}</Text>
+                        </View>
+                        <TouchableOpacity onPress={() => setActiveToast(null)}>
+                            <Icon name="close" size={20} color={COLORS.white} />
+                        </TouchableOpacity>
+                    </LinearGradient>
+                </View>
+            )}
 
             <View style={styles.header}>
                 <View>
@@ -429,8 +576,144 @@ export default function HomeScreen() {
                             color={COLORS.white}
                             style={{ marginRight: 10 }}
                         />
-                        <Text style={styles.commanderText}>{t('commandButton')}</Text>
                     </TouchableOpacity>
+                </View>
+            )}
+
+            {/* Modal Interception Covoiturage */}
+            {selectedSharedRide && (
+                <View style={styles.interceptModalOverlay}>
+                    <View style={[styles.interceptModal, { backgroundColor: colors.card }]}>
+                        <View style={styles.interceptHeader}>
+                            <View style={styles.interceptIconContainer}>
+                                <Icon name="people" size={24} color={COLORS.white} />
+                            </View>
+                            <View style={styles.interceptTitleRow}>
+                                <Text style={[styles.interceptTitle, { color: colors.text }]}>Covoiturage trouvé !</Text>
+                                <Text style={[styles.interceptSubtitle, { color: colors.textSecondary }]}>Passage imminent dans votre zone</Text>
+                            </View>
+                            <TouchableOpacity onPress={() => setSelectedSharedRide(null)}>
+                                <Icon name="close" size={24} color={colors.textSecondary} />
+                            </TouchableOpacity>
+                        </View>
+
+                        <View style={styles.interceptContent}>
+                            <View style={styles.interceptInfoRow}>
+                                <View style={styles.interceptInfoItem}>
+                                    <Text style={styles.interceptInfoLabel}>Vers</Text>
+                                    <Text style={[styles.interceptInfoValue, { color: colors.text }]} numberOfLines={1}>
+                                        {selectedSharedRide.dropoff_address}
+                                    </Text>
+                                </View>
+                            </View>
+
+                            <View style={[styles.priceBonusCard, { backgroundColor: isDark ? '#1a3a3a' : '#E8F5E9' }]}>
+                                <View style={styles.priceInfo}>
+                                    <Text style={styles.priceLabel}>Prix Interception</Text>
+                                    <View style={styles.priceRow}>
+                                        <Text style={[styles.priceValue, { color: colors.text }]}>
+                                            {Math.round(selectedSharedRide.current_price_per_person * 1.15).toLocaleString()} F
+                                        </Text>
+                                        <View style={styles.bonusBadge}>
+                                            <Text style={styles.bonusText}>-50% vs Taxi</Text>
+                                        </View>
+                                    </View>
+                                </View>
+                                <Icon name="rocket" size={32} color="#4CAF50" />
+                            </View>
+
+                            <TouchableOpacity
+                                style={styles.joinButton}
+                                onPress={handleJoinIntercept}
+                                disabled={isJoining}
+                            >
+                                <LinearGradient colors={['#4CAF50', '#2E7D32']} style={styles.joinGradient}>
+                                    <Text style={styles.joinText}>MONTER MAINTENANT</Text>
+                                    <Icon name="arrow-forward" size={20} color={COLORS.white} />
+                                </LinearGradient>
+                            </TouchableOpacity>
+
+                            {/* SIGNAL VERT : Pour se faire repérer */}
+                            <TouchableOpacity
+                                style={[styles.signalButton, isFlashActive && styles.signalButtonActive]}
+                                onPress={() => setIsFlashActive(!isFlashActive)}
+                            >
+                                <Icon name="flashlight" size={20} color={isFlashActive ? COLORS.white : '#4CAF50'} />
+                                <Text style={[styles.signalText, { color: isFlashActive ? COLORS.white : '#4CAF50' }]}>
+                                    {isFlashActive ? "SIGNAL ACTIF (Agitez le téléphone)" : "SIGNALLER MA PRÉSENCE"}
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+            )}
+
+            {/* OVERLAY SIGNAL VERT (FLASH) */}
+            {isFlashActive && (
+                <TouchableOpacity
+                    style={styles.flashOverlay}
+                    onPress={() => setIsFlashActive(false)}
+                    activeOpacity={1}
+                >
+                    <Animated.View style={[styles.flashContent, {
+                        opacity: flashAnim.interpolate({
+                            inputRange: [0, 1],
+                            outputRange: [0.3, 1]
+                        })
+                    }]}>
+                        <Icon name="car" size={120} color={COLORS.white} />
+                        <Text style={styles.flashTitle}>TRANSIGO</Text>
+                        <Text style={styles.flashSub}>Le chauffeur vous cherche...</Text>
+                    </Animated.View>
+                </TouchableOpacity>
+            )}
+
+            {/* Carousel de Suggestions Simplifié */}
+            {sharedRides && sharedRides.length > 0 && !selectedSharedRide && (
+                <View style={styles.carpoolCarouselContainer}>
+                    <Text style={[styles.carpoolCarouselTitle, { color: colors.text }]}>
+                        🚗 {language === 'fr' ? 'Chauffeurs qui passent près de vous' : 'Drivers passing near you'}
+                    </Text>
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.carpoolCarouselScroll}>
+                        {sharedRides.map((ride) => (
+                            <TouchableOpacity
+                                key={ride.id}
+                                style={[styles.carpoolCardMini, { backgroundColor: colors.card }]}
+                                onPress={() => setSelectedSharedRide(ride)}
+                                activeOpacity={0.9}
+                            >
+                                <View style={styles.carpoolCardHeader}>
+                                    <View style={styles.driverAvatarSmall}>
+                                        <Text style={styles.driverAvatarText}>{ride.driver_name?.charAt(0) || 'D'}</Text>
+                                    </View>
+                                    <View style={styles.carpoolInfoMini}>
+                                        <Text style={[styles.driverNameMini, { color: colors.text }]}>{ride.driver_name || 'Chauffeur'}</Text>
+                                        <Text style={styles.carpoolDestMini} numberOfLines={1}>Vers {ride.dropoff_address.split(',')[0]}</Text>
+                                    </View>
+                                    <View style={styles.approachBadge}>
+                                        <Text style={styles.approachText}>
+                                            {(() => {
+                                                const d = calculateDistance(
+                                                    userLocation.latitude, userLocation.longitude,
+                                                    ride.current_lat || ride.pickup_lat, ride.current_lon || ride.pickup_lon
+                                                );
+                                                return d < 1 ? `${Math.round(d * 1000)} m` : `${d.toFixed(1)} km`;
+                                            })()}
+                                        </Text>
+                                    </View>
+                                </View>
+                                <View style={styles.carpoolCardFooter}>
+                                    <View style={styles.miniPriceBadge}>
+                                        <Text style={styles.miniPriceText}>{Math.round(ride.current_price_per_person * 1.15).toLocaleString()} F</Text>
+                                    </View>
+                                    <View style={styles.miniCatchAction}>
+                                        <Text style={styles.miniCatchText}>INTERCEPTER</Text>
+                                        <Icon name="hand-right" size={14} color={COLORS.primary} />
+                                    </View>
+                                </View>
+                            </TouchableOpacity>
+                        ))}
+                    </ScrollView>
                 </View>
             )}
         </View>
@@ -691,5 +974,294 @@ const styles = StyleSheet.create({
     },
     clearSelectionButton: {
         marginLeft: 8,
+    },
+    // Interception Modal
+    interceptModalOverlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(0,0,0,0.4)',
+        justifyContent: 'flex-end',
+        padding: SPACING.lg,
+    },
+    interceptModal: {
+        borderRadius: 24,
+        padding: 24,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: -4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 10,
+        elevation: 20,
+    },
+    interceptHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 20,
+    },
+    interceptIconContainer: {
+        width: 44,
+        height: 44,
+        borderRadius: 12,
+        backgroundColor: '#4CAF50',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 16,
+    },
+    interceptTitleRow: {
+        flex: 1,
+    },
+    interceptTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+    },
+    interceptSubtitle: {
+        fontSize: 12,
+    },
+    interceptContent: {
+        gap: 16,
+    },
+    interceptInfoRow: {
+        flexDirection: 'row',
+    },
+    interceptInfoItem: {
+        flex: 1,
+    },
+    interceptInfoLabel: {
+        fontSize: 12,
+        color: COLORS.textSecondary,
+        marginBottom: 4,
+    },
+    interceptInfoValue: {
+        fontSize: 16,
+        fontWeight: '600',
+    },
+    priceBonusCard: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: 16,
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: '#4CAF5030',
+    },
+    priceInfo: {
+        flex: 1,
+    },
+    priceLabel: {
+        fontSize: 13,
+        color: '#4CAF50',
+        fontWeight: '600',
+        marginBottom: 4,
+    },
+    priceRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+    },
+    priceValue: {
+        fontSize: 24,
+        fontWeight: 'bold',
+    },
+    bonusBadge: {
+        backgroundColor: '#4CAF50',
+        paddingHorizontal: 8,
+        paddingVertical: 2,
+        borderRadius: 6,
+    },
+    bonusText: {
+        color: COLORS.white,
+        fontSize: 10,
+        fontWeight: 'bold',
+    },
+    joinButton: {
+        borderRadius: 16,
+        overflow: 'hidden',
+        marginTop: 8,
+    },
+    joinGradient: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 18,
+        gap: 10,
+    },
+    joinText: {
+        color: COLORS.white,
+        fontSize: 16,
+        fontWeight: 'bold',
+        letterSpacing: 1,
+    },
+    signalButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 14,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: '#4CAF50',
+        marginTop: 10,
+        gap: 10,
+    },
+    signalButtonActive: {
+        backgroundColor: '#4CAF50',
+    },
+    signalText: {
+        fontSize: 14,
+        fontWeight: 'bold',
+    },
+    flashOverlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: '#4CAF50',
+        zIndex: 9999,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    flashContent: {
+        alignItems: 'center',
+    },
+    flashTitle: {
+        color: COLORS.white,
+        fontSize: 48,
+        fontWeight: 'bold',
+        marginTop: 20,
+    },
+    flashSub: {
+        color: 'rgba(255,255,255,0.8)',
+        fontSize: 18,
+        marginTop: 10,
+    },
+    // Styles pour le Carousel de Suggestions
+    carpoolCarouselContainer: {
+        position: 'absolute',
+        bottom: 100,
+        left: 0,
+        right: 0,
+        paddingVertical: 10,
+    },
+    carpoolCarouselTitle: {
+        fontSize: 13,
+        fontWeight: 'bold',
+        marginLeft: 20,
+        marginBottom: 8,
+        textShadowColor: 'rgba(0,0,0,0.1)',
+        textShadowOffset: { width: 0, height: 1 },
+        textShadowRadius: 2,
+    },
+    carpoolCarouselScroll: {
+        paddingHorizontal: 20,
+        gap: 12,
+    },
+    carpoolCardMini: {
+        width: width * 0.7,
+        borderRadius: 18,
+        padding: 12,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        elevation: 4,
+        borderWidth: 1,
+        borderColor: 'rgba(76, 175, 80, 0.1)',
+    },
+    carpoolCardHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 10,
+    },
+    driverAvatarSmall: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        backgroundColor: '#4CAF5020',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 10,
+    },
+    driverAvatarText: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#4CAF50',
+    },
+    carpoolInfoMini: {
+        flex: 1,
+    },
+    driverNameMini: {
+        fontSize: 14,
+        fontWeight: 'bold',
+    },
+    carpoolDestMini: {
+        fontSize: 11,
+        color: COLORS.textSecondary,
+    },
+    carpoolCardFooter: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingTop: 8,
+        borderTopWidth: 1,
+        borderTopColor: 'rgba(0,0,0,0.05)',
+    },
+    miniPriceBadge: {
+        backgroundColor: '#4CAF5015',
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 8,
+    },
+    miniPriceText: {
+        fontSize: 14,
+        fontWeight: 'bold',
+        color: '#2E7D32',
+    },
+    miniCatchAction: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+    },
+    miniCatchText: {
+        fontSize: 11,
+        fontWeight: 'bold',
+        color: COLORS.primary,
+    },
+    approachBadge: {
+        backgroundColor: COLORS.primary + '20',
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: COLORS.primary + '30',
+    },
+    approachText: {
+        fontSize: 12,
+        fontWeight: 'bold',
+        color: COLORS.primary,
+    },
+    toastContainer: {
+        position: 'absolute',
+        top: 120,
+        left: 20,
+        right: 20,
+        zIndex: 1000,
+    },
+    toastGradient: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 16,
+        borderRadius: 16,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 10,
+        elevation: 10,
+    },
+    toastTextContainer: {
+        flex: 1,
+        marginLeft: 12,
+    },
+    toastTitle: {
+        color: COLORS.white,
+        fontSize: 14,
+        fontWeight: 'bold',
+    },
+    toastSub: {
+        color: 'rgba(255,255,255,0.8)',
+        fontSize: 12,
     },
 });

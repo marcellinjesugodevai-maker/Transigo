@@ -25,6 +25,13 @@ export interface SharedRide {
     is_accepting_passengers: boolean;
     created_at: string;
     departure_time?: string;
+    route_trajectory?: Array<{ latitude: number; longitude: number }>;
+    current_lat?: number;
+    current_lon?: number;
+    driver_id?: string;
+    ride_type?: 'passenger_request' | 'driver_planned';
+    destination_mode?: 'home' | 'custom';
+    updated_at?: string;
 }
 
 export interface SharedRidePassenger {

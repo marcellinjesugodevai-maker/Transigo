@@ -24,6 +24,7 @@ import { COLORS, SPACING, RADIUS } from '@/constants';
 import { useThemeStore, useLanguageStore } from '@/stores';
 import { getTranslation } from '@/i18n/translations';
 import { locationService, LocationSearchResult } from '@/services/locationService';
+import OSMMap from '@/components/OSMMap'; // Importation de la carte
 import * as Location from 'expo-location';
 import * as ImagePicker from 'expo-image-picker';
 
@@ -112,6 +113,10 @@ export default function DeliveryScreen() {
     const [isSearchingDelivery, setIsSearchingDelivery] = useState(false);
     const [showDeliveryResults, setShowDeliveryResults] = useState(false);
 
+    // États pour le sélecteur de carte
+    const [mapPickingMode, setMapPickingMode] = useState<'pickup' | 'delivery' | null>(null);
+    const [showAdvancedGPS, setShowAdvancedGPS] = useState(false);
+
     // Distance et prix estimés
     const [estimatedDistance, setEstimatedDistance] = useState(0);
     const [estimatedPrice, setEstimatedPrice] = useState(selectedVehicle.basePrice);
@@ -152,10 +157,13 @@ export default function DeliveryScreen() {
         return () => clearTimeout(debounce);
     }, [deliveryAddress]);
 
-    // Calcul du prix quand les coordonnées changent
+    // Recalcul du prix quand les coordonnées OU le véhicule changent
     useEffect(() => {
         if (pickupCoords && deliveryCoords) {
             calculatePrice();
+        } else {
+            // Si pas encore de trajet, on affiche juste le prix de base pour informer l'utilisateur
+            setEstimatedPrice(selectedVehicle.basePrice);
         }
     }, [pickupCoords, deliveryCoords, selectedVehicle]);
 
@@ -226,6 +234,52 @@ export default function DeliveryScreen() {
         setDeliveryCoords(null);
     };
 
+    // --- MAGIC PASTE: Extraction GPS depuis les liens ---
+    const handlePasteCheck = async (text: string, type: 'pickup' | 'delivery') => {
+        // Regex pour détecter les coordonnées dans divers formats d'URL Google Maps
+        // 1. Format @lat,lon
+        // 2. Format !3dLAT!4dLON (liens longs desktop)
+        const gpsMatch = text.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/) ||
+            text.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
+
+        if (gpsMatch) {
+            const lat = parseFloat(gpsMatch[1]);
+            const lon = parseFloat(gpsMatch[2]);
+            const coords = { latitude: lat, longitude: lon };
+            const address = await locationService.reverseGeocode(lat, lon);
+
+            if (type === 'pickup') {
+                setPickupAddress(address || "Position extraite du lien");
+                setPickupCoords(coords);
+            } else {
+                setDeliveryAddress(address || "Position extraite du lien");
+                setDeliveryCoords(coords);
+            }
+            Alert.alert("🚀 Magic Paste !", "Coordonnées GPS extraites du lien avec succès.");
+            return;
+        }
+
+        // Cas des liens courts type maps.app.goo.gl -> Nécessiterait un fetch pour résoudre le redirect
+        // On se contente du texte pour l'instant
+    };
+
+    // --- MAP PICKER: Sélection visuelle ---
+    const handleMapSelect = async (lat: number, lon: number) => {
+        if (!mapPickingMode) return;
+
+        const address = await locationService.reverseGeocode(lat, lon);
+        const coords = { latitude: lat, longitude: lon };
+
+        if (mapPickingMode === 'pickup') {
+            setPickupAddress(address || "Point sur la carte");
+            setPickupCoords(coords);
+        } else {
+            setDeliveryAddress(address || "Point sur la carte");
+            setDeliveryCoords(coords);
+        }
+        setMapPickingMode(null);
+    };
+
     const handleConfirmDelivery = () => {
         if (!pickupCoords || !deliveryCoords) {
             Alert.alert(
@@ -288,13 +342,16 @@ export default function DeliveryScreen() {
                         borderColor: isDark ? '#444444' : '#E0E0E0',
                     }]}
                     placeholder={type === 'pickup'
-                        ? (language === 'fr' ? 'Adresse d\'enlèvement...' : 'Pickup address...')
-                        : (language === 'fr' ? 'Adresse de livraison...' : 'Delivery address...')}
+                        ? (language === 'fr' ? 'Adresse ou coller un lien...' : 'Address or paste link...')
+                        : (language === 'fr' ? 'Adresse ou coller un lien...' : 'Address or paste link...')}
                     placeholderTextColor={isDark ? '#888888' : '#999999'}
                     value={value}
                     onChangeText={(text) => {
                         setValue(text);
                         if (coords) setCoords(null);
+                        if (text.includes('http') || text.includes('maps')) {
+                            handlePasteCheck(text, type);
+                        }
                     }}
                 />
                 {isSearching && <ActivityIndicator size="small" color={COLORS.primary} />}
@@ -303,6 +360,12 @@ export default function DeliveryScreen() {
                         <Icon name="close-circle" size={20} color={colors.textSecondary} />
                     </TouchableOpacity>
                 )}
+                <TouchableOpacity
+                    style={styles.mapToolButton}
+                    onPress={() => setMapPickingMode(type)}
+                >
+                    <Icon name="map" size={20} color={COLORS.primary} />
+                </TouchableOpacity>
                 <TouchableOpacity
                     style={styles.gpsButton}
                     onPress={() => handleUseCurrentLocation(type)}
@@ -446,6 +509,45 @@ export default function DeliveryScreen() {
                         clearDelivery
                     )}
                 </View>
+
+                {/* LIEN GPS AVANCÉ */}
+                <TouchableOpacity
+                    style={styles.advancedGpsBtn}
+                    onPress={() => setShowAdvancedGPS(!showAdvancedGPS)}
+                >
+                    <Text style={styles.advancedGpsText}>
+                        {showAdvancedGPS ? (language === 'fr' ? 'Masquer GPS' : 'Hide GPS') : (language === 'fr' ? 'Saisie GPS experte' : 'Expert GPS Input')}
+                    </Text>
+                    <Icon name={showAdvancedGPS ? "chevron-up" : "chevron-down"} size={16} color={COLORS.primary} />
+                </TouchableOpacity>
+
+                {showAdvancedGPS && (
+                    <View style={[styles.advancedGpsCard, { backgroundColor: colors.card }]}>
+                        <Text style={[styles.gpsLabel, { color: colors.textSecondary }]}>Saisie manuelle (ex: 5.34, -4.03)</Text>
+                        <View style={styles.gpsInputsRow}>
+                            <TextInput
+                                style={[styles.gpsInput, { color: colors.text, backgroundColor: isDark ? '#333' : '#F9F9F9' }]}
+                                placeholder="Latitude"
+                                placeholderTextColor="#888"
+                                keyboardType="numeric"
+                                onSubmitEditing={(e) => {
+                                    const val = parseFloat(e.nativeEvent.text);
+                                    if (!isNaN(val)) setPickupCoords(prev => ({ latitude: val, longitude: prev?.longitude || 0 }));
+                                }}
+                            />
+                            <TextInput
+                                style={[styles.gpsInput, { color: colors.text, backgroundColor: isDark ? '#333' : '#F9F9F9' }]}
+                                placeholder="Longitude"
+                                placeholderTextColor="#888"
+                                keyboardType="numeric"
+                                onSubmitEditing={(e) => {
+                                    const val = parseFloat(e.nativeEvent.text);
+                                    if (!isNaN(val)) setPickupCoords(prev => ({ latitude: prev?.latitude || 0, longitude: val }));
+                                }}
+                            />
+                        </View>
+                    </View>
+                )}
 
                 {/* Distance estimée */}
                 {estimatedDistance > 0 && (
@@ -643,6 +745,43 @@ export default function DeliveryScreen() {
                     </LinearGradient>
                 </TouchableOpacity>
             </ScrollView>
+
+            {/* SECTEUR DE CARTE PLEIN ÉCRAN */}
+            {mapPickingMode && (
+                <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.background, zIndex: 1000 }]}>
+                    <View style={styles.mapPickerHeader}>
+                        <TouchableOpacity
+                            style={styles.backButtonCircular}
+                            onPress={() => setMapPickingMode(null)}
+                        >
+                            <Icon name="arrow-back" size={24} color={colors.text} />
+                        </TouchableOpacity>
+                        <Text style={[styles.mapPickerTitle, { color: colors.text }]}>
+                            {mapPickingMode === 'pickup'
+                                ? (language === 'fr' ? 'Point d\'enlèvement' : 'Pickup Point')
+                                : (language === 'fr' ? 'Point de livraison' : 'Delivery Point')}
+                        </Text>
+                    </View>
+
+                    <OSMMap
+                        initialRegion={{
+                            latitude: pickupCoords?.latitude || 5.3484,
+                            longitude: pickupCoords?.longitude || -4.0305,
+                            latitudeDelta: 0.01,
+                            longitudeDelta: 0.01
+                        }}
+                        onMapClick={handleMapSelect}
+                        style={{ flex: 1 }}
+                    />
+
+                    <View style={styles.mapPickerFooter}>
+                        <LinearGradient colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.8)']} style={styles.footerGradient} />
+                        <Text style={styles.footerHint}>
+                            {language === 'fr' ? 'Touchez la carte pour choisir le point exact' : 'Tap on map to pick the exact spot'}
+                        </Text>
+                    </View>
+                </View>
+            )}
         </View>
     );
 }
@@ -770,6 +909,88 @@ const styles = StyleSheet.create({
     },
     gpsButton: {
         padding: 8,
+    },
+    mapToolButton: {
+        padding: 8,
+    },
+    mapPickerHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingTop: 50,
+        paddingHorizontal: 20,
+        paddingBottom: 20,
+        gap: 15,
+        backgroundColor: 'rgba(255,255,255,0.9)',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 10,
+    },
+    backButtonCircular: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: '#F5F5F5',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    mapPickerTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+    },
+    mapPickerFooter: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: 120,
+        justifyContent: 'flex-end',
+        alignItems: 'center',
+        paddingBottom: 30,
+    },
+    footerGradient: {
+        ...StyleSheet.absoluteFillObject,
+    },
+    footerHint: {
+        color: '#FFF',
+        fontSize: 14,
+        fontWeight: '600',
+        textShadowColor: 'rgba(0,0,0,0.5)',
+        textShadowOffset: { width: 0, height: 1 },
+        textShadowRadius: 3,
+    },
+    advancedGpsBtn: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 8,
+        marginTop: 12,
+        marginBottom: 8,
+    },
+    advancedGpsText: {
+        fontSize: 12,
+        color: COLORS.primary,
+        fontWeight: 'bold',
+    },
+    advancedGpsCard: {
+        padding: SPACING.md,
+        borderRadius: RADIUS.md,
+        marginBottom: 15,
+    },
+    gpsLabel: {
+        fontSize: 11,
+        marginBottom: 8,
+    },
+    gpsInputsRow: {
+        flexDirection: 'row',
+        gap: 10,
+    },
+    gpsInput: {
+        flex: 1,
+        padding: 10,
+        borderRadius: 8,
+        fontSize: 13,
     },
     coordsBadge: {
         flexDirection: 'row',

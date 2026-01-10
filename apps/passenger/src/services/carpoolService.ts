@@ -147,7 +147,15 @@ export const carpoolService = {
             }
 
             const newPassengerCount = ride.current_passengers + 1;
-            const newPricePerPerson = calculatePricePerPerson(ride.base_price, newPassengerCount);
+            const isInterception = ride.status === 'driver_assigned' || ride.status === 'in_progress';
+
+            // Calcul du prix de base par personne (partagé)
+            let newPricePerPerson = calculatePricePerPerson(ride.base_price, newPassengerCount);
+
+            // Si c'est une interception, le nouveau passager paie 15% de plus
+            const priceToPayForNew = isInterception
+                ? Math.round(newPricePerPerson * 1.15)
+                : newPricePerPerson;
 
             // Ajouter le passager
             const { error: passengerError } = await supabase
@@ -163,13 +171,13 @@ export const carpoolService = {
                     dropoff_address: dropoff.address,
                     dropoff_lat: dropoff.lat,
                     dropoff_lon: dropoff.lon,
-                    price_to_pay: newPricePerPerson,
+                    price_to_pay: priceToPayForNew,
                     pickup_order: newPassengerCount,
                 });
 
             if (passengerError) throw passengerError;
 
-            // Mettre à jour le compte de passagers
+            // Mettre à jour le compte de passagers et le prix de base partagé
             const { error: updateError } = await supabase
                 .from('shared_rides')
                 .update({
@@ -180,13 +188,15 @@ export const carpoolService = {
 
             if (updateError) throw updateError;
 
-            // Mettre à jour le prix pour tous les passagers
+            // Mettre à jour le prix pour les ANCIENS passagers (ils bénéficient du partage)
+            // Le nouveau passager garde son prix avec bonus +15%
             await supabase
                 .from('shared_ride_passengers')
                 .update({ price_to_pay: newPricePerPerson })
-                .eq('shared_ride_id', rideId);
+                .eq('shared_ride_id', rideId)
+                .neq('user_id', userId); // Ne pas écraser le prix du nouveau qui a payé le bonus
 
-            return { success: true, newPrice: newPricePerPerson };
+            return { success: true, newPrice: priceToPayForNew };
         } catch (error: any) {
             console.error('joinRide error:', error);
             return { success: false, error: error.message || error };

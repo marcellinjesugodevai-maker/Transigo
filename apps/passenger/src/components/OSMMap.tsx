@@ -21,12 +21,29 @@ interface OSMMapProps {
         latitude: number;
         longitude: number;
     }>;
+    sharedRoutes?: Array<{
+        id: string;
+        coordinates: Array<{ latitude: number; longitude: number }>;
+        color?: string;
+    }>;
+    onRoutePress?: (id: string) => void;
     centerTo?: { latitude: number; longitude: number };
     zoom?: number;
     style?: any;
+    onMapClick?: (lat: number, lon: number) => void;
 }
 
-export default function OSMMap({ initialRegion, markers = [], routeCoordinates = [], centerTo, zoom = 14, style }: OSMMapProps) {
+export default function OSMMap({
+    initialRegion,
+    markers = [],
+    routeCoordinates = [],
+    sharedRoutes = [],
+    onRoutePress,
+    centerTo,
+    zoom = 14,
+    style,
+    onMapClick
+}: OSMMapProps) {
     const webViewRef = useRef<WebView>(null);
     const isLoadedRef = useRef(false);
     const lastRouteKeyRef = useRef('');
@@ -163,6 +180,7 @@ export default function OSMMap({ initialRegion, markers = [], routeCoordinates =
         var markerBearings = {};   // Orientation actuelle de chaque marqueur
         var routeLine = null;
         var lastRouteKey = '';
+        var sharedRouteLines = {}; // Stockage des lignes partagées par ID
 
         setTimeout(function() { map.invalidateSize(); }, 200);
 
@@ -312,18 +330,65 @@ export default function OSMMap({ initialRegion, markers = [], routeCoordinates =
                     }
                 }
             } else {
-                // Pas de route - supprimer si existante
-                if (routeLine) {
-                    map.removeLayer(routeLine);
-                    routeLine = null;
-                }
                 lastRouteKey = '';
             }
-            // 3. CENTRAGE MANUEL (seulement si pas de route)
+
+            // 3. ITINÉRAIRES PARTAGÉS (CONTEXTE)
+            if (data.sharedRoutes && data.sharedRoutes.length > 0) {
+                var receivedSharedIds = {};
+                data.sharedRoutes.forEach(function(sr) {
+                    receivedSharedIds[sr.id] = true;
+                    if (sharedRouteLines[sr.id]) {
+                        // Déjà dessiné - on pourrait mettre à jour mais souvent statique
+                    } else {
+                        var coords = sr.coordinates.map(function(c) { return [c.latitude, c.longitude]; });
+                        sharedRouteLines[sr.id] = L.polyline(coords, {
+                            color: sr.color || '#2E7D32', // Vert par défaut pour covoiturage
+                            weight: 5,
+                            opacity: 0.6,
+                            lineCap: 'round',
+                            dashArray: '10, 10' // Pointillé pour distinguer du trajet principal
+                        }).addTo(map);
+                        
+                        // Détection de clic sur la ligne
+                        sharedRouteLines[sr.id].on('click', function(e) {
+                            window.ReactNativeWebView.postMessage(JSON.stringify({ 
+                                type: 'route_press', 
+                                id: sr.id 
+                            }));
+                        });
+                    }
+                });
+                
+                // Nettoyage des routes disparues
+                Object.keys(sharedRouteLines).forEach(function(id) {
+                    if (!receivedSharedIds[id]) {
+                        map.removeLayer(sharedRouteLines[id]);
+                        delete sharedRouteLines[id];
+                    }
+                });
+            } else {
+                // Nettoyer tout si aucun
+                Object.keys(sharedRouteLines).forEach(function(id) {
+                    map.removeLayer(sharedRouteLines[id]);
+                    delete sharedRouteLines[id];
+                });
+            }
+
+            // 4. CENTRAGE MANUEL
             if (data.centerTo && data.centerTo.latitude != null && !hasRoute) {
                 map.flyTo([data.centerTo.latitude, data.centerTo.longitude], data.zoom || 14, { duration: 1 });
             }
         }
+
+        // 5. GESTION DU CLIC SUR LA CARTE
+        map.on('click', function(e) {
+            window.ReactNativeWebView.postMessage(JSON.stringify({ 
+                type: 'map_click', 
+                lat: e.latlng.lat,
+                lon: e.latlng.lng 
+            }));
+        });
 
         // Réception des messages
         document.addEventListener('message', function(e) {
@@ -343,13 +408,14 @@ export default function OSMMap({ initialRegion, markers = [], routeCoordinates =
         // Toujours envoyer les données - le JavaScript gère la comparaison de clé
         const payload = JSON.stringify({
             markers,
-            routeCoordinates,  // Toujours envoyer - JS compare la clé pour éviter redraw
+            routeCoordinates,
+            sharedRoutes,
             centerTo,
             zoom
         });
 
         webViewRef.current.postMessage(payload);
-    }, [markers, routeCoordinates, centerTo, zoom]);
+    }, [markers, routeCoordinates, sharedRoutes, centerTo, zoom]);
 
     // Debounce les mises à jour pour éviter les envois trop fréquents
     useEffect(() => {
@@ -366,7 +432,7 @@ export default function OSMMap({ initialRegion, markers = [], routeCoordinates =
                 clearTimeout(debounceTimerRef.current);
             }
         };
-    }, [markers, routeCoordinates, centerTo, zoom]);
+    }, [markers, routeCoordinates, sharedRoutes, centerTo, zoom]);
 
     return (
         <View style={[styles.container, style]}>
@@ -383,9 +449,20 @@ export default function OSMMap({ initialRegion, markers = [], routeCoordinates =
                 onLoadEnd={() => {
                     isLoadedRef.current = true;
                     setTimeout(() => {
-                        lastRouteKeyRef.current = ''; // Reset pour forcer l'envoi initial de la route
+                        lastRouteKeyRef.current = '';
                         sendData();
                     }, 400);
+                }}
+                onMessage={(event) => {
+                    try {
+                        const data = JSON.parse(event.nativeEvent.data);
+                        if (data.type === 'route_press' && onRoutePress) {
+                            onRoutePress(data.id);
+                        }
+                        if (data.type === 'map_click' && onMapClick) {
+                            onMapClick(data.lat, data.lon);
+                        }
+                    } catch (e) { }
                 }}
             />
         </View>

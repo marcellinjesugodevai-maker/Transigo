@@ -23,6 +23,11 @@ CREATE TABLE IF NOT EXISTS shared_rides (
     driver_name TEXT,
     driver_phone TEXT,
     
+    -- Trajectoire et position temps réel
+    route_trajectory JSONB, -- Tableau de points [{lat, lon}, ...]
+    current_lat DECIMAL(10, 8),
+    current_lon DECIMAL(11, 8),
+    
     -- Prix et places
     base_price INT NOT NULL,
     current_price_per_person INT NOT NULL,

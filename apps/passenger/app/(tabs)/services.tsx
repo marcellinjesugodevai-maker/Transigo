@@ -121,6 +121,41 @@ export default function ServicesScreen() {
                     </LinearGradient>
                 </TouchableOpacity>
 
+                {/* COVOITURAGE - New Dynamic Feature */}
+                <TouchableOpacity
+                    style={styles.carpoolCard}
+                    onPress={() => router.push({ pathname: '/(tabs)/home', params: { vehicleType: 'shared' } })}
+                    activeOpacity={0.9}
+                >
+                    <LinearGradient
+                        colors={['#4CAF50', '#2E7D32']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={styles.carpoolGradient}
+                    >
+                        <View style={styles.carpoolHeader}>
+                            <Text style={styles.carpoolTitle}>
+                                {language === 'fr' ? 'Covoiturage Dynamique' : 'Dynamic Carpooling'}
+                            </Text>
+                            <View style={styles.newBadge}>
+                                <Text style={styles.newBadgeText}>NEW</Text>
+                            </View>
+                        </View>
+                        <Text style={styles.carpoolSubtitle}>
+                            {language === 'fr'
+                                ? 'Partagez un trajet et payez jusqu\'à 60% moins cher'
+                                : 'Share a ride and pay up to 60% less'}
+                        </Text>
+                        <View style={styles.carpoolFooter}>
+                            <View style={styles.interceptBadge}>
+                                <Icon name="radio" size={12} color="#fff" />
+                                <Text style={styles.interceptBadgeText}>Interception en temps réel</Text>
+                            </View>
+                            <Text style={styles.carpoolArrow}>→</Text>
+                        </View>
+                    </LinearGradient>
+                </TouchableOpacity>
+
                 {/* Lottery Card (Secondary) */}
                 <TouchableOpacity
                     style={styles.lotteryCard}
@@ -282,7 +317,7 @@ export default function ServicesScreen() {
                     </View>
                 </View>
             </ScrollView>
-        </View>
+        </View >
     );
 }
 
@@ -606,5 +641,69 @@ const styles = StyleSheet.create({
         fontSize: 12,
         color: 'rgba(255,255,255,0.9)',
         marginTop: 2,
+    },
+    // Carpool Card Styles
+    carpoolCard: {
+        borderRadius: 20,
+        overflow: 'hidden',
+        marginBottom: SPACING.lg,
+        shadowColor: '#4CAF50',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 10,
+        elevation: 6,
+    },
+    carpoolGradient: {
+        padding: 20,
+    },
+    carpoolHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 8,
+    },
+    carpoolTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#fff',
+    },
+    newBadge: {
+        backgroundColor: '#FFEB3B',
+        paddingHorizontal: 8,
+        paddingVertical: 2,
+        borderRadius: 8,
+    },
+    newBadgeText: {
+        color: '#000',
+        fontSize: 10,
+        fontWeight: 'bold',
+    },
+    carpoolSubtitle: {
+        fontSize: 14,
+        color: 'rgba(255,255,255,0.9)',
+        marginBottom: 16,
+    },
+    carpoolFooter: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+    },
+    interceptBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        backgroundColor: 'rgba(255,255,255,0.15)',
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        borderRadius: 10,
+    },
+    interceptBadgeText: {
+        color: '#fff',
+        fontSize: 11,
+        fontWeight: '600',
+    },
+    carpoolArrow: {
+        color: '#fff',
+        fontSize: 24,
     },
 });
