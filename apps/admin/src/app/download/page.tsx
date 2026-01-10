@@ -119,14 +119,14 @@ export default function DownloadPage() {
                         </ul>
 
                         <a
-                            href="/apks/transigo-passenger-v1-3.apk"
-                            download="TransiGo-Passenger-v1-3.apk"
+                            href="/apks/transigo-passenger-v1-4.apk"
+                            download="TransiGo-Passenger-v1-4.apk"
                             className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 px-6 rounded-xl flex items-center justify-center gap-3 transition-colors shadow-lg shadow-blue-600/20 group-hover:shadow-blue-600/40"
                         >
                             <Download size={24} />
                             <span>Télécharger APK (Bêta)</span>
                         </a>
-                        <p className="text-center text-sm text-gray-500 mt-4">Version 1.3.0 • Android 8+</p>
+                        <p className="text-center text-sm text-gray-500 mt-4">Version 1.4.0 • Android 8+</p>
                     </div>
 
                     {/* Business Card */}
