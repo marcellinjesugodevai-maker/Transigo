@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "TransiGo",
-    "slug": "transigo-passager",
+    "slug": "transi-go-passenger",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -64,9 +64,9 @@
     },
     "extra": {
       "eas": {
-        "projectId": "05993757-fc16-43d7-b6f3-7ef0617907d9"
+        "projectId": "952fce41-2cb4-41a4-8658-2cad036f7056"
       }
     },
-    "owner": "devai123"
+    "owner": "marceljesugo"
   }
 }

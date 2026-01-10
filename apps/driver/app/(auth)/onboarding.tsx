@@ -282,7 +282,7 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     imageContainer: {
-        height: height * 0.55,
+        height: height * 0.40,
         position: 'relative',
     },
     slideImage: {
@@ -300,9 +300,10 @@ const styles = StyleSheet.create({
     // Content
     slideContent: {
         flex: 1,
-        paddingHorizontal: 30,
-        paddingTop: 20,
+        paddingHorizontal: 24,
+        paddingTop: 16,
         alignItems: 'center',
+        justifyContent: 'flex-start',
     },
     iconBadge: {
         width: 60,
@@ -326,16 +327,16 @@ const styles = StyleSheet.create({
     slideSubtitle: {
         fontSize: 18,
         fontWeight: '600',
-        color: COLORS.orange,
-        marginBottom: 12,
+        color: '#FF8C00',
+        marginBottom: 16,
         textAlign: 'center',
     },
     slideDescription: {
-        fontSize: 15,
-        color: COLORS.gray,
+        fontSize: 16,
+        color: '#555555',
         textAlign: 'center',
-        lineHeight: 22,
-        paddingHorizontal: 10,
+        lineHeight: 24,
+        paddingHorizontal: 16,
     },
 
     // Pagination
