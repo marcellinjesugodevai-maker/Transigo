@@ -34,7 +34,7 @@ export default function DownloadPage() {
                         </div>
                         <div className="text-4xl font-bold tracking-tighter shadow-black drop-shadow-lg">Transi<span className="text-[#00C853]">Go</span></div>
                     </div>
-                    <div className="bg-white/10 px-4 py-2 rounded-full text-sm font-semibold backdrop-blur-md border border-white/10">Bêta v1.0</div>
+                    <div className="bg-white/10 px-4 py-2 rounded-full text-sm font-semibold backdrop-blur-md border border-white/10">Bêta v1.1</div>
                 </nav>
 
                 {/* HERO SECTION */}
@@ -126,7 +126,7 @@ export default function DownloadPage() {
                             <Download size={24} />
                             <span>Télécharger APK (Bêta)</span>
                         </a>
-                        <p className="text-center text-sm text-gray-500 mt-4">Version 1.0.0-beta • Android 8+</p>
+                        <p className="text-center text-sm text-gray-500 mt-4">Version 1.1.0-beta • Android 8+</p>
                     </div>
 
                     {/* Business Card */}
@@ -165,7 +165,7 @@ export default function DownloadPage() {
                             <Download size={24} />
                             <span>Télécharger APK (Bêta)</span>
                         </a>
-                        <p className="text-center text-sm text-gray-500 mt-4">Version 1.0.0-beta • Android 8+</p>
+                        <p className="text-center text-sm text-gray-500 mt-4">Version 1.1.0-beta • Android 8+</p>
                     </div>
 
                 </div>
