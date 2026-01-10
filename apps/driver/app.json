@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "TransiGo Business",
-    "slug": "transigo-business",
+    "slug": "transi-go-business",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -59,9 +59,9 @@
     },
     "extra": {
       "eas": {
-        "projectId": "fe9e2f20-f61e-4873-a726-13d38c934996"
+        "projectId": "2510c432-908f-47a5-a7cb-95e990985807"
       }
     },
-    "owner": "devai123"
+    "owner": "marceljesugo"
   }
 }

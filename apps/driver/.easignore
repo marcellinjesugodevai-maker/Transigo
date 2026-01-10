@@ -1,0 +1,11 @@
+# Ignore large APK files for EAS Build
+apps/admin/public/apks/
+
+# Ignore other admin files not needed for mobile build
+apps/admin/
+
+# Ignore node_modules (handled by EAS)
+node_modules/
+
+# Ignore git
+.git/
