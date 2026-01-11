@@ -14,6 +14,7 @@ const allNavItems = [
     { href: '/users', icon: '👥', label: 'Passagers' },
     { href: '/wallets', icon: '💳', label: 'Wallets' },
     { href: '/transactions', icon: '📜', label: 'Transactions' },
+    { href: '/reviews', icon: '⭐', label: 'Avis' },
     { href: '/tickets', icon: '📩', label: 'Tickets' },
     { href: '/chat', icon: '💬', label: 'Chat Support' },
     { href: '/faq', icon: '❓', label: 'FAQ' },

@@ -193,6 +193,7 @@ export const PAGE_PERMISSIONS: Record<string, AdminRole[]> = {
     '/users': ['super_admin', 'controller_passengers'],
     '/wallets': ['super_admin', 'manager_wallets'],
     '/transactions': ['super_admin', 'manager_wallets'],
+    '/reviews': ['super_admin', 'support_client'],
     '/tickets': ['super_admin', 'controller_passengers', 'support_client'],
     '/chat': ['super_admin', 'controller_passengers', 'support_client'],
     '/faq': ['super_admin'],
@@ -323,3 +324,105 @@ export const adminAuthService = {
         return { error };
     },
 };
+
+// ============================================
+// Reviews Service (Avis utilisateurs)
+// ============================================
+
+export interface Review {
+    id: string;
+    name: string;
+    rating: number;
+    comment: string;
+    is_approved: boolean;
+    created_at: string;
+    updated_at: string;
+}
+
+export const reviewsService = {
+    // Get all reviews (admin - all, public - only approved)
+    getAll: async (onlyApproved: boolean = false) => {
+        let query = supabase
+            .from('reviews')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (onlyApproved) {
+            query = query.eq('is_approved', true);
+        }
+
+        const { data, error } = await query;
+        return { reviews: data || [], error };
+    },
+
+    // Get approved reviews for public display
+    getApproved: async () => {
+        const { data, error } = await supabase
+            .from('reviews')
+            .select('*')
+            .eq('is_approved', true)
+            .order('created_at', { ascending: false })
+            .limit(20);
+        return { reviews: data || [], error };
+    },
+
+    // Create new review
+    create: async (review: { name: string; rating: number; comment: string }) => {
+        const { data, error } = await supabase
+            .from('reviews')
+            .insert({
+                name: review.name,
+                rating: review.rating,
+                comment: review.comment,
+                is_approved: false, // Par défaut non approuvé
+            })
+            .select()
+            .single();
+        return { review: data, error };
+    },
+
+    // Approve review
+    approve: async (reviewId: string) => {
+        const { error } = await supabase
+            .from('reviews')
+            .update({ is_approved: true })
+            .eq('id', reviewId);
+        return { error };
+    },
+
+    // Reject/Unapprove review
+    reject: async (reviewId: string) => {
+        const { error } = await supabase
+            .from('reviews')
+            .update({ is_approved: false })
+            .eq('id', reviewId);
+        return { error };
+    },
+
+    // Delete review
+    delete: async (reviewId: string) => {
+        const { error } = await supabase
+            .from('reviews')
+            .delete()
+            .eq('id', reviewId);
+        return { error };
+    },
+
+    // Get stats
+    getStats: async () => {
+        const { data: all } = await supabase
+            .from('reviews')
+            .select('*');
+
+        const reviews = all || [];
+        const total = reviews.length;
+        const approved = reviews.filter(r => r.is_approved).length;
+        const pending = reviews.filter(r => !r.is_approved).length;
+        const avgRating = total > 0
+            ? (reviews.reduce((acc, r) => acc + r.rating, 0) / total).toFixed(1)
+            : "0.0";
+
+        return { total, approved, pending, avgRating };
+    },
+};
+
