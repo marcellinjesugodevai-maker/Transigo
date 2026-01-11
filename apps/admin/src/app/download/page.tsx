@@ -1,17 +1,104 @@
 "use client";
 
 import { useState, useEffect } from "react";
-// import QRCode from "react-qr-code"; // Failed install, using API instead
-import { Download, Smartphone, CheckCircle, Shield, TrendingUp, ChevronRight } from "lucide-react";
+import { Download, Smartphone, CheckCircle, Shield, TrendingUp, Star, Send, MessageSquare, User } from "lucide-react";
+
+interface Review {
+    id: string;
+    name: string;
+    rating: number;
+    comment: string;
+    date: string;
+}
 
 export default function DownloadPage() {
     const [mounted, setMounted] = useState(false);
     const [origin, setOrigin] = useState("");
 
+    // Reviews state
+    const [reviews, setReviews] = useState<Review[]>([]);
+    const [reviewName, setReviewName] = useState("");
+    const [reviewRating, setReviewRating] = useState(0);
+    const [reviewComment, setReviewComment] = useState("");
+    const [hoverRating, setHoverRating] = useState(0);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitSuccess, setSubmitSuccess] = useState(false);
+
     useEffect(() => {
         setMounted(true);
         setOrigin(window.location.origin);
+
+        // Load reviews from localStorage
+        const savedReviews = localStorage.getItem('transigo_reviews');
+        if (savedReviews) {
+            setReviews(JSON.parse(savedReviews));
+        } else {
+            // Default reviews for display
+            const defaultReviews: Review[] = [
+                {
+                    id: '1',
+                    name: 'Kofi A.',
+                    rating: 5,
+                    comment: "Excellente application ! Les courses sont rapides et les chauffeurs très professionnels.",
+                    date: '2026-01-10'
+                },
+                {
+                    id: '2',
+                    name: 'Aminata D.',
+                    rating: 4,
+                    comment: "Très pratique pour mes déplacements quotidiens. J'apprécie le suivi en temps réel.",
+                    date: '2026-01-09'
+                },
+                {
+                    id: '3',
+                    name: 'Yao K.',
+                    rating: 5,
+                    comment: "En tant que chauffeur, l'application Business est vraiment intuitive. Les revenus sont transparents.",
+                    date: '2026-01-08'
+                }
+            ];
+            setReviews(defaultReviews);
+            localStorage.setItem('transigo_reviews', JSON.stringify(defaultReviews));
+        }
     }, []);
+
+    const handleSubmitReview = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        if (!reviewName.trim() || !reviewComment.trim() || reviewRating === 0) {
+            return;
+        }
+
+        setIsSubmitting(true);
+
+        // Simulate API call
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        const newReview: Review = {
+            id: Date.now().toString(),
+            name: reviewName.trim(),
+            rating: reviewRating,
+            comment: reviewComment.trim(),
+            date: new Date().toISOString().split('T')[0]
+        };
+
+        const updatedReviews = [newReview, ...reviews];
+        setReviews(updatedReviews);
+        localStorage.setItem('transigo_reviews', JSON.stringify(updatedReviews));
+
+        // Reset form
+        setReviewName("");
+        setReviewRating(0);
+        setReviewComment("");
+        setIsSubmitting(false);
+        setSubmitSuccess(true);
+
+        setTimeout(() => setSubmitSuccess(false), 3000);
+    };
+
+    const averageRating = reviews.length > 0
+        ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1)
+        : "0.0";
 
     if (!mounted) return null;
 
@@ -34,7 +121,7 @@ export default function DownloadPage() {
                         </div>
                         <div className="text-4xl font-bold tracking-tighter shadow-black drop-shadow-lg">Transi<span className="text-[#00C853]">Go</span></div>
                     </div>
-                    <div className="bg-white/10 px-4 py-2 rounded-full text-sm font-semibold backdrop-blur-md border border-white/10">Bêta v1.1</div>
+                    <div className="bg-white/10 px-4 py-2 rounded-full text-sm font-semibold backdrop-blur-md border border-white/10">Bêta v2.0</div>
                 </nav>
 
                 {/* HERO SECTION */}
@@ -171,7 +258,7 @@ export default function DownloadPage() {
                 </div>
 
                 {/* QR Code Section */}
-                <div className="bg-white p-8 rounded-3xl shadow-2xl flex flex-col items-center">
+                <div className="bg-white p-8 rounded-3xl shadow-2xl flex flex-col items-center mb-24">
                     <div className="bg-gray-100 p-4 rounded-2xl mb-6">
                         {mounted && (
                             <img
@@ -182,11 +269,163 @@ export default function DownloadPage() {
                         )}
                     </div>
                     <h3 className="text-black text-xl font-bold mb-2">Partagez l'expérience</h3>
-                    <p className="text-gray-500 text-center max-w-xs mb-6">
+                    <p className="text-gray-500 text-center max-w-xs">
                         Scannez ce QR code pour ouvrir cette page sur un autre appareil.
                     </p>
-
                 </div>
+
+                {/* REVIEWS SECTION */}
+                <section id="reviews" className="w-full max-w-6xl mb-24">
+                    <div className="text-center mb-12">
+                        <h2 className="text-3xl md:text-5xl font-bold mb-4">Avis des Utilisateurs</h2>
+                        <div className="flex items-center justify-center gap-3">
+                            <div className="flex">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                    <Star
+                                        key={star}
+                                        size={24}
+                                        className={star <= Math.round(parseFloat(averageRating)) ? "text-yellow-400 fill-yellow-400" : "text-gray-600"}
+                                    />
+                                ))}
+                            </div>
+                            <span className="text-2xl font-bold text-yellow-400">{averageRating}</span>
+                            <span className="text-gray-400">({reviews.length} avis)</span>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        {/* Review Form */}
+                        <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-3xl p-8">
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className="bg-purple-500/20 p-3 rounded-2xl">
+                                    <MessageSquare className="text-purple-400" size={28} />
+                                </div>
+                                <h3 className="text-2xl font-bold">Donnez votre avis</h3>
+                            </div>
+
+                            {submitSuccess && (
+                                <div className="bg-green-500/20 border border-green-500/30 text-green-400 px-4 py-3 rounded-xl mb-6 flex items-center gap-2">
+                                    <CheckCircle size={20} />
+                                    <span>Merci pour votre avis !</span>
+                                </div>
+                            )}
+
+                            <form onSubmit={handleSubmitReview} className="space-y-6">
+                                {/* Name Field */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                                        <User size={16} className="inline mr-2" />
+                                        Votre nom *
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={reviewName}
+                                        onChange={(e) => setReviewName(e.target.value)}
+                                        placeholder="Ex: Jean D."
+                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors"
+                                        required
+                                    />
+                                </div>
+
+                                {/* Rating Field */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                                        <Star size={16} className="inline mr-2" />
+                                        Note *
+                                    </label>
+                                    <div className="flex gap-2">
+                                        {[1, 2, 3, 4, 5].map((star) => (
+                                            <button
+                                                key={star}
+                                                type="button"
+                                                onClick={() => setReviewRating(star)}
+                                                onMouseEnter={() => setHoverRating(star)}
+                                                onMouseLeave={() => setHoverRating(0)}
+                                                className="transition-transform hover:scale-110"
+                                            >
+                                                <Star
+                                                    size={32}
+                                                    className={
+                                                        star <= (hoverRating || reviewRating)
+                                                            ? "text-yellow-400 fill-yellow-400"
+                                                            : "text-gray-600 hover:text-yellow-400"
+                                                    }
+                                                />
+                                            </button>
+                                        ))}
+                                    </div>
+                                    {reviewRating === 0 && (
+                                        <p className="text-sm text-gray-500 mt-1">Cliquez sur une étoile pour noter</p>
+                                    )}
+                                </div>
+
+                                {/* Comment Field */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                                        <MessageSquare size={16} className="inline mr-2" />
+                                        Commentaire *
+                                    </label>
+                                    <textarea
+                                        value={reviewComment}
+                                        onChange={(e) => setReviewComment(e.target.value)}
+                                        placeholder="Partagez votre expérience avec TransiGo..."
+                                        rows={4}
+                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors resize-none"
+                                        required
+                                    />
+                                </div>
+
+                                {/* Submit Button */}
+                                <button
+                                    type="submit"
+                                    disabled={isSubmitting || !reviewName.trim() || !reviewComment.trim() || reviewRating === 0}
+                                    className="w-full bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 disabled:from-gray-600 disabled:to-gray-500 disabled:cursor-not-allowed text-white font-bold py-4 px-6 rounded-xl flex items-center justify-center gap-3 transition-all shadow-lg shadow-purple-600/20"
+                                >
+                                    {isSubmitting ? (
+                                        <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                    ) : (
+                                        <>
+                                            <Send size={20} />
+                                            <span>Envoyer mon avis</span>
+                                        </>
+                                    )}
+                                </button>
+                            </form>
+                        </div>
+
+                        {/* Reviews List */}
+                        <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
+                            {reviews.map((review) => (
+                                <div
+                                    key={review.id}
+                                    className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-colors"
+                                >
+                                    <div className="flex items-center justify-between mb-3">
+                                        <div className="flex items-center gap-3">
+                                            <div className="bg-gradient-to-br from-purple-500 to-blue-500 w-10 h-10 rounded-full flex items-center justify-center text-white font-bold">
+                                                {review.name.charAt(0).toUpperCase()}
+                                            </div>
+                                            <div>
+                                                <p className="font-semibold">{review.name}</p>
+                                                <p className="text-sm text-gray-500">{new Date(review.date).toLocaleDateString('fr-FR')}</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex">
+                                            {[1, 2, 3, 4, 5].map((star) => (
+                                                <Star
+                                                    key={star}
+                                                    size={16}
+                                                    className={star <= review.rating ? "text-yellow-400 fill-yellow-400" : "text-gray-600"}
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <p className="text-gray-300 leading-relaxed">{review.comment}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
 
                 {/* Footer */}
                 <footer className="mt-20 text-center text-gray-600 text-sm">
@@ -198,3 +437,4 @@ export default function DownloadPage() {
         </div>
     );
 }
+
