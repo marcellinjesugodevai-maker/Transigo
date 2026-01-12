@@ -218,9 +218,9 @@ export default function DriversPage() {
                                         <div style={{ fontSize: 11, color: '#64748b' }}>Solde Wallet</div>
                                     </div>
 
-                                    <div style={{ display: 'flex', gap: 8 }}>
+                                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                                         <button
-                                            onClick={() => openTopUp(driver)}
+                                            onClick={(e) => { e.stopPropagation(); openTopUp(driver); }}
                                             style={{ ...buttonStyle, background: 'rgba(34, 197, 94, 0.1)', color: '#22c55e' }}
                                             title="Créditer Wallet"
                                         >
@@ -230,16 +230,45 @@ export default function DriversPage() {
                                             href={`https://wa.me/${driver.phone.replace(/\+/g, '')}`}
                                             target="_blank"
                                             rel="noopener noreferrer"
+                                            onClick={(e) => e.stopPropagation()}
                                             style={{ ...buttonStyle, background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', textDecoration: 'none', display: 'flex', alignItems: 'center' }}
                                             title="Contacter WhatsApp"
                                         >
                                             💬
                                         </a>
+                                        {!driver.is_verified && (
+                                            <button
+                                                onClick={async (e) => {
+                                                    e.stopPropagation();
+                                                    if (confirm('Valider ce chauffeur ?')) {
+                                                        await adminService.verifyDriver(driver.id, true);
+                                                        fetchDrivers();
+                                                    }
+                                                }}
+                                                style={{ ...buttonStyle, background: '#22c55e', color: '#fff' }}
+                                                title="Valider ce chauffeur"
+                                            >
+                                                ✅ Valider
+                                            </button>
+                                        )}
                                         <button
-                                            onClick={() => handleBlockToggle(driver)}
-                                            style={{ ...buttonStyle, background: driver.is_blocked ? '#22c55e' : '#ef4444', color: '#fff' }}
+                                            onClick={(e) => { e.stopPropagation(); handleBlockToggle(driver); }}
+                                            style={{ ...buttonStyle, background: driver.is_blocked ? '#22c55e' : '#f59e0b', color: '#fff' }}
                                         >
-                                            {driver.is_blocked ? 'Débloquer' : 'Bloquer'}
+                                            {driver.is_blocked ? '🔓' : '🔒'}
+                                        </button>
+                                        <button
+                                            onClick={async (e) => {
+                                                e.stopPropagation();
+                                                if (confirm(`⚠️ Supprimer définitivement ${driver.first_name} ${driver.last_name} ?\n\nCette action est IRRÉVERSIBLE.`)) {
+                                                    await adminService.deleteDriver(driver.id);
+                                                    fetchDrivers();
+                                                }
+                                            }}
+                                            style={{ ...buttonStyle, background: '#ef4444', color: '#fff' }}
+                                            title="Supprimer définitivement"
+                                        >
+                                            🗑️
                                         </button>
                                     </div>
                                 </div>

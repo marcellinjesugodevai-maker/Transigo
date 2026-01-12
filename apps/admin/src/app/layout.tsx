@@ -11,6 +11,7 @@ const allNavItems = [
     { href: '/drivers', icon: '👨‍✈️', label: 'Chauffeurs' },
     { href: '/deliveries', icon: '🛵', label: 'Livreurs' },
     { href: '/rides', icon: '🚗', label: 'Courses' },
+    { href: '/carpools', icon: '🚙', label: 'Covoiturages' },
     { href: '/users', icon: '👥', label: 'Passagers' },
     { href: '/wallets', icon: '💳', label: 'Wallets' },
     { href: '/transactions', icon: '📜', label: 'Transactions' },

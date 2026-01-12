@@ -159,6 +159,56 @@ export const adminService = {
         return { error };
     },
 
+    // Vérifier un chauffeur (validation admin)
+    verifyDriver: async (driverId: string, verified: boolean) => {
+        const { error } = await supabase
+            .from('drivers')
+            .update({ is_verified: verified })
+            .eq('id', driverId);
+        return { error };
+    },
+
+    // Supprimer un chauffeur
+    deleteDriver: async (driverId: string) => {
+        // Supprimer d'abord les transactions wallet liées
+        await supabase
+            .from('wallet_transactions')
+            .delete()
+            .eq('driver_id', driverId);
+
+        // Puis supprimer le chauffeur
+        const { error } = await supabase
+            .from('drivers')
+            .delete()
+            .eq('id', driverId);
+
+        return { error };
+    },
+
+    // Modifier un chauffeur
+    updateDriver: async (driverId: string, updates: {
+        first_name?: string;
+        last_name?: string;
+        phone?: string;
+        email?: string;
+        profile_type?: 'driver' | 'delivery' | 'seller';
+        vehicle_type?: string;
+        vehicle_plate?: string;
+        vehicle_brand?: string;
+        vehicle_model?: string;
+        vehicle_color?: string;
+        commission_rate?: number;
+    }) => {
+        const { data, error } = await supabase
+            .from('drivers')
+            .update(updates)
+            .eq('id', driverId)
+            .select()
+            .single();
+
+        return { driver: data, error };
+    },
+
     // S'abonner aux stats en temps réel
     subscribeToStats: (callback: () => void) => {
         const channel = supabase
