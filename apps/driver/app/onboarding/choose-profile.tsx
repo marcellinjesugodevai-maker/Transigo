@@ -1,8 +1,11 @@
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Alert } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useDriverRegStore } from '../../src/stores/driverRegStore';
+import { useDriverStore } from '../../src/stores/driverStore';
+import { supabase } from '../../src/services/supabaseService';
+import { useState } from 'react';
 
 const { width } = Dimensions.get('window');
 
@@ -51,18 +54,52 @@ const PROFILES = [
 
 export default function ChooseProfileScreen() {
     const { updateData } = useDriverRegStore();
+    const { driver, setDriver } = useDriverStore();
+    const [isLoading, setIsLoading] = useState(false);
 
-    const handleSelectProfile = (profileId: 'driver' | 'delivery' | 'seller') => {
-        // Save profile type to registration store
-        updateData({ profileType: profileId });
+    const handleSelectProfile = async (profileId: 'driver' | 'delivery' | 'seller') => {
+        if (!driver?.id) {
+            Alert.alert('Erreur', 'Veuillez vous reconnecter.');
+            router.replace('/(auth)/login');
+            return;
+        }
 
-        // Navigate to vehicle/documents based on profile
-        if (profileId === 'driver') {
-            router.push('/(auth)/register-vehicle');
-        } else if (profileId === 'delivery') {
-            router.push('/(auth)/register-delivery-preferences');
-        } else {
-            router.push('/(auth)/register-documents'); // Sellers skip vehicle
+        setIsLoading(true);
+
+        try {
+            // 1. Mettre à jour dans Supabase
+            const { error } = await supabase
+                .from('drivers')
+                .update({
+                    profile_type: profileId,
+                    vehicle_type: profileId === 'delivery' ? 'moto' : 'standard'
+                })
+                .eq('id', driver.id);
+
+            if (error) throw error;
+
+            // 2. Mettre à jour le store local
+            setDriver({
+                ...driver,
+                profileType: profileId
+            });
+
+            // 3. Mettre à jour le store d'inscription
+            updateData({ profileType: profileId });
+
+            // 4. Naviguer vers l'écran suivant
+            if (profileId === 'driver') {
+                router.push('/(auth)/register-vehicle');
+            } else if (profileId === 'delivery') {
+                router.push('/(auth)/register-delivery-preferences');
+            } else {
+                router.push('/(auth)/register-documents');
+            }
+        } catch (error: any) {
+            console.error('Error updating profile type:', error);
+            Alert.alert('Erreur', 'Impossible de sauvegarder le profil. Réessayez.');
+        } finally {
+            setIsLoading(false);
         }
     };
 

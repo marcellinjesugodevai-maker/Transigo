@@ -2,12 +2,15 @@
 // TRANSIGO - RECURRING RIDES LIST SCREEN  
 // =============================================
 
+import { useEffect, useCallback } from 'react';
 import {
     View,
     Text,
     StyleSheet,
     ScrollView,
     TouchableOpacity,
+    RefreshControl,
+    ActivityIndicator,
 } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -26,7 +29,17 @@ const DAY_LABELS: Record<string, string> = {
 };
 
 export default function RecurringRidesScreen() {
-    const { rides, togglePause, deleteRide } = useRecurringRideStore();
+    const { rides, isLoading, fetchRides, togglePause, deleteRide } = useRecurringRideStore();
+
+    // Charger les données au montage
+    useEffect(() => {
+        fetchRides();
+    }, []);
+
+    const onRefresh = useCallback(() => {
+        fetchRides();
+    }, []);
+
 
     const getStatusColor = (status: string) => {
         switch (status) {
@@ -73,8 +86,21 @@ export default function RecurringRidesScreen() {
             <ScrollView
                 contentContainerStyle={styles.scrollContent}
                 showsVerticalScrollIndicator={false}
+                refreshControl={
+                    <RefreshControl
+                        refreshing={isLoading}
+                        onRefresh={onRefresh}
+                        colors={[COLORS.primary]}
+                        tintColor={COLORS.primary}
+                    />
+                }
             >
-                {rides.length === 0 ? (
+                {isLoading && rides.length === 0 ? (
+                    <View style={styles.loadingState}>
+                        <ActivityIndicator size="large" color={COLORS.primary} />
+                        <Text style={styles.loadingText}>Chargement...</Text>
+                    </View>
+                ) : rides.length === 0 ? (
                     <View style={styles.emptyState}>
                         <Text style={styles.emptyEmoji}>📅</Text>
                         <Text style={styles.emptyTitle}>Aucun trajet régulier</Text>
@@ -391,5 +417,14 @@ const styles = StyleSheet.create({
         fontSize: 11,
         fontWeight: '600',
         color: COLORS.primary,
+    },
+    loadingState: {
+        alignItems: 'center',
+        paddingVertical: SPACING.xl * 2,
+    },
+    loadingText: {
+        marginTop: SPACING.md,
+        fontSize: 14,
+        color: COLORS.textSecondary,
     },
 });

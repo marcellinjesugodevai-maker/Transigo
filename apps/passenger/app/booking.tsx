@@ -185,14 +185,15 @@ export default function BookingScreen() {
         const { setPickup, setDropoff, setEstimates, setRouteCoordinates, setSelectedVehicle } = useRideStore.getState();
 
         // Prix Brut (Base) vs Prix Final (Net)
-        // TODO: Vérifier si un coupon est actif (pour l'instant 0 réduction sauf si sharedRide)
         const grossPrice = calculatePrice(distance, eta, selectedVehicle.id as any);
         const finalPrice = getFinalPrice();
-        const discountAmount = grossPrice - finalPrice;
+
+        // Si l'utilisateur négocie, on utilise son prix proposé
+        const displayPrice = isNegotiating && proposedPrice ? Number(proposedPrice) : finalPrice;
 
         setPickup(pickupCoords as any, params.src_name as string || 'Ma position');
         setDropoff(dropoffCoords as any, params.dest_name as string || 'Destination');
-        setEstimates(finalPrice, eta, distance);
+        setEstimates(displayPrice, eta, distance);
         setRouteCoordinates(routeCoords);
         useRideStore.getState().clearStops();
         stops.forEach(s => useRideStore.getState().addStop(s));
@@ -210,8 +211,10 @@ export default function BookingScreen() {
                 dest_address: params.dest_name || 'Destination',
                 distance: distance.toFixed(1),
                 duration: eta.toString(),
-                price: finalPrice.toString(), // Ce que le client voit
-                gross_price: grossPrice.toString(), // Ce que le chauffeur gagne
+                price: displayPrice.toString(), // Prix affiché (négocié ou normal)
+                gross_price: grossPrice.toString(), // Prix de base
+                is_negotiated: isNegotiating ? 'true' : 'false',
+                negotiated_price: isNegotiating ? proposedPrice : '',
                 stops: JSON.stringify(stops)
             }
         });

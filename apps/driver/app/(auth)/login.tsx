@@ -166,7 +166,7 @@ export default function LoginScreen() {
                 return;
             }
 
-            // Insert new driver
+            // Insert new driver (profile_type NOT set yet - will be set in choose-profile screen)
             const { data: newDriver, error } = await supabase.from('drivers').insert({
                 first_name: firstName,
                 last_name: lastName,
@@ -174,14 +174,14 @@ export default function LoginScreen() {
                 password: password,
                 is_verified: false,
                 is_online: false,
-                vehicle_type: 'standard', // Default, will update later
+                // profile_type et vehicle_type seront définis dans l'écran de choix de profil
                 vehicle_plate: 'PENDING', // Required by DB
                 rating: 5.0
             }).select().single();
 
             if (error) throw error;
 
-            // Auto Login
+            // Auto Login (sans profileType - sera défini dans choose-profile)
             useDriverStore.getState().setDriver({
                 id: newDriver.id,
                 firstName: newDriver.first_name,
@@ -195,7 +195,7 @@ export default function LoginScreen() {
                 joinedAt: new Date(),
                 isVerified: false,
                 vehiclePlate: 'PENDING',
-                profileType: 'driver' // Default for new account registration
+                profileType: undefined // Sera défini dans choose-profile
             });
 
             // Redirect to Onboarding Intro

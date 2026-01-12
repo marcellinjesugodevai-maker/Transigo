@@ -568,14 +568,24 @@ export default function HomeScreen() {
                             });
                         }}
                     >
-                        <Icon
-                            name={preselectedVehicleType === 'moto' ? 'bicycle' :
-                                preselectedVehicleType === 'van' ? 'bus' :
-                                    preselectedVehicleType === 'comfort' ? 'car-sport' : 'car'}
-                            size={28}
-                            color={COLORS.white}
-                            style={{ marginRight: 10 }}
-                        />
+                        <LinearGradient
+                            colors={[COLORS.primary, COLORS.primaryDark]}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 0 }}
+                            style={styles.commanderGradient}
+                        >
+                            <Icon
+                                name={preselectedVehicleType === 'moto' ? 'bicycle' :
+                                    preselectedVehicleType === 'van' ? 'bus' :
+                                        preselectedVehicleType === 'comfort' ? 'car-sport' : 'car'}
+                                size={24}
+                                color={COLORS.white}
+                            />
+                            <Text style={styles.commanderText}>
+                                {language === 'fr' ? 'Commander' : 'Book Now'}
+                            </Text>
+                            <Icon name="arrow-forward" size={20} color={COLORS.white} />
+                        </LinearGradient>
                     </TouchableOpacity>
                 </View>
             )}
@@ -916,17 +926,21 @@ const styles = StyleSheet.create({
         zIndex: 999,
     },
     commanderButtonInner: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingVertical: 18,
         borderRadius: 30,
-        backgroundColor: COLORS.primary,
+        overflow: 'hidden',
         shadowColor: COLORS.primary,
         shadowOffset: { width: 0, height: 6 },
         shadowOpacity: 0.4,
         shadowRadius: 15,
         elevation: 10,
+    },
+    commanderGradient: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 18,
+        paddingHorizontal: 24,
+        gap: 10,
     },
     commanderIcon: {
         fontSize: 24,

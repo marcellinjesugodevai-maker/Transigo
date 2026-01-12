@@ -1,5 +1,5 @@
 // Driver Carpool Store (Zustand)
-import create from 'zustand';
+import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 
 export type SharedRide = {

@@ -45,7 +45,7 @@ const SLIDES: OnboardingSlide[] = [
     },
     {
         id: '3',
-        emoji: '📍',
+        emoji: '📍➡️📍',
         title: 'Multi-destinations',
         description: 'Ajoutez plusieurs arrêts sur votre trajet. Pratique pour vos courses.',
     },

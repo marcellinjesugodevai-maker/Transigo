@@ -19,7 +19,7 @@ export default function RegisterSuccessScreen() {
         <View style={styles.container}>
             <View style={styles.content}>
                 <View style={styles.iconContainer}>
-                    <Ionicons name="checkmark-circle" size={100} color={COLORS.secondary} />
+                    <Text style={{ fontSize: 100 }}>✅</Text>
                 </View>
                 <Text style={styles.title}>Dossier Reçu !</Text>
                 <Text style={styles.message}>

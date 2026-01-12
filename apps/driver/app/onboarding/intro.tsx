@@ -84,9 +84,7 @@ export default function OnboardingIntroScreen() {
                         <Ionicons name="arrow-forward" size={24} color={COLORS.white} />
                     </LinearGradient>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => router.replace('/(tabs)/home')} style={styles.skipBtn}>
-                    <Text style={styles.skipText}>Plus tard (Accès limité)</Text>
-                </TouchableOpacity>
+                {/* Bouton "Plus tard" supprimé - L'utilisateur doit compléter son profil */}
                 <TouchableOpacity
                     onPress={async () => {
                         try {

@@ -111,11 +111,17 @@ export default function SplashScreen() {
             const hasSeenOnboarding = await AsyncStorage.getItem('hasSeenOnboarding');
 
             if (!hasSeenOnboarding) {
+                // Première fois : afficher l'onboarding
                 router.replace('/(auth)/onboarding' as any);
             } else if (!driver) {
+                // Pas de driver sauvegardé : aller au login
                 router.replace('/(auth)/login' as any);
+            } else if (!driver.isVerified) {
+                // Driver existe mais PAS ENCORE VALIDÉ par l'admin
+                // Aller à l'écran d'attente de validation
+                router.replace('/(auth)/register-pending' as any);
             } else {
-                // Driver is logged in - go to home
+                // Driver validé : aller au home
                 router.replace('/(tabs)/home' as any);
             }
         };

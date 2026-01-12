@@ -348,10 +348,13 @@ export default function FindingDriverScreen() {
                         <View style={[styles.summaryDivider, { backgroundColor: colors.textSecondary + '30' }]} />
                         <View style={styles.summaryItem}>
                             <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>
-                                {language === 'fr' ? 'Prix' : 'Price'}
+                                {params.is_negotiated === 'true'
+                                    ? (language === 'fr' ? 'Votre offre' : 'Your offer')
+                                    : (language === 'fr' ? 'Prix' : 'Price')}
                             </Text>
-                            <Text style={[styles.summaryValue, { color: COLORS.primary }]}>
+                            <Text style={[styles.summaryValue, { color: params.is_negotiated === 'true' ? '#4CAF50' : COLORS.primary }]}>
                                 {(estimatedPrice || Number(params.price) || 2500).toLocaleString('fr-FR')} F
+                                {params.is_negotiated === 'true' && ' 💬'}
                             </Text>
                         </View>
                     </View>

@@ -80,8 +80,8 @@ export default function CreateRecurringRideScreen() {
         const monthlyPrice = calculateMonthlyPrice();
         const vehicle = VEHICLE_TYPES.find((v) => v.id === vehicleType)!;
 
-        // Créer le trajet
-        const newRide = {
+        // Créer le trajet via Supabase
+        const { success, error } = await addRide({
             pickup: {
                 address: pickup,
                 latitude: 5.3599,
@@ -95,20 +95,18 @@ export default function CreateRecurringRideScreen() {
             days: selectedDays,
             time,
             vehicleType,
-            monthlyPrice,
             pricePerRide: vehicle.price,
-            estimatedRidesPerMonth: selectedDays.length * 4,
-            status: 'active' as const,
-            startDate: new Date(),
-        };
+        });
 
-        addRide(newRide);
+        if (!success) {
+            Alert.alert('Erreur', error || 'Impossible de créer le trajet');
+            return;
+        }
 
         // Programmer les notifications pour ce trajet
-        // On récupère les trajets du store pour obtenir le nouvel ID
         setTimeout(async () => {
             const { rides } = useRecurringRideStore.getState();
-            const createdRide = rides[rides.length - 1];
+            const createdRide = rides[0]; // Le dernier créé est en premier (order by created_at desc)
             if (createdRide) {
                 await scheduleRecurringRideNotification(createdRide);
                 console.log('Notifications programmées pour le trajet:', createdRide.id);

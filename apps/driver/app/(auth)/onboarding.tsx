@@ -1,6 +1,7 @@
 // =============================================
 // TRANSIGO BUSINESS - ONBOARDING SCREEN
-// 3 slides for 3 profile types: Driver, Delivery, Seller
+// Minimalist text-only version with progress bar
+// Same style as Passenger app
 // =============================================
 
 import { useState, useRef } from 'react';
@@ -8,63 +9,61 @@ import {
     View,
     Text,
     StyleSheet,
-    TouchableOpacity,
     Dimensions,
-    Image,
-    StatusBar,
     FlatList,
+    TouchableOpacity,
     Animated,
 } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 const COLORS = {
     primary: '#00C853',
     primaryDark: '#00A344',
-    orange: '#FF8C00',
-    white: '#FFFFFF',
-    black: '#1A1A2E',
+    background: '#E8F5E9',
+    text: '#212121',
+    textSecondary: '#757575',
     gray: '#757575',
 };
 
-// Images must be required at top-level for Metro bundler
-const IMAGES = {
-    driver: require('../../assets/images/onboarding/driver.png'),
-    delivery: require('../../assets/images/onboarding/delivery.png'),
-    seller: require('../../assets/images/onboarding/seller.png'),
-};
+// =============================================
+// ONBOARDING DATA - Text only with native emojis
+// =============================================
 
-// Onboarding slides data
-const SLIDES = [
+interface OnboardingSlide {
+    id: string;
+    emoji: string;
+    title: string;
+    description: string;
+}
+
+const SLIDES: OnboardingSlide[] = [
     {
-        id: 'driver',
-        title: 'Chauffeur VTC',
-        subtitle: 'Conduisez et gagnez',
-        description: 'Transportez des passagers dans votre véhicule et générez des revenus selon votre emploi du temps.',
-        icon: '🚗',
-        image: IMAGES.driver,
+        id: '1',
+        emoji: '🚗',
+        title: 'Devenez Chauffeur VTC',
+        description: 'Transportez des passagers et générez des revenus selon votre emploi du temps.',
     },
     {
-        id: 'delivery',
-        title: 'Livreur',
-        subtitle: 'Livrez rapidement',
-        description: 'Effectuez des livraisons de colis et repas. Flexibilité totale avec votre moto ou vélo.',
-        icon: '📦',
-        image: IMAGES.delivery,
+        id: '2',
+        emoji: '📦',
+        title: 'Livrez des colis',
+        description: 'Effectuez des livraisons rapides avec votre moto ou vélo. Flexibilité totale.',
     },
     {
-        id: 'seller',
-        title: 'Vendeur',
-        subtitle: 'Vendez en ligne',
-        description: 'Proposez vos produits sur notre plateforme et touchez des milliers de clients.',
-        icon: '🛒',
-        image: IMAGES.seller,
+        id: '3',
+        emoji: '💰',
+        title: 'Gagnez plus',
+        description: 'Commissions avantageuses, paiements rapides et bonus réguliers.',
     },
 ];
+
+// =============================================
+// MAIN COMPONENT
+// =============================================
 
 export default function OnboardingScreen() {
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -90,95 +89,57 @@ export default function OnboardingScreen() {
         router.replace('/(auth)/login' as any);
     };
 
-    const renderSlide = ({ item, index }: { item: typeof SLIDES[0]; index: number }) => {
+    const renderItem = ({ item }: { item: OnboardingSlide }) => (
+        <View style={styles.slide}>
+            {/* Emoji */}
+            <Text style={styles.emoji}>{item.emoji}</Text>
+
+            {/* Title */}
+            <Text style={styles.title}>{item.title}</Text>
+
+            {/* Description */}
+            <Text style={styles.description}>{item.description}</Text>
+        </View>
+    );
+
+    // Progress bar component
+    const ProgressBar = () => {
+        const progress = ((currentIndex + 1) / SLIDES.length) * 100;
+
         return (
-            <View style={styles.slide}>
-                {/* Image container */}
-                <View style={styles.imageContainer}>
-                    <Image
-                        source={item.image}
-                        style={styles.slideImage}
-                        resizeMode="cover"
-                    />
-                    {/* Gradient overlay at bottom */}
-                    <LinearGradient
-                        colors={['transparent', COLORS.white]}
-                        style={styles.imageGradient}
+            <View style={styles.progressContainer}>
+                <View style={styles.progressBackground}>
+                    <Animated.View
+                        style={[
+                            styles.progressFill,
+                            { width: `${progress}%` }
+                        ]}
                     />
                 </View>
-
-                {/* Content */}
-                <View style={styles.slideContent}>
-                    <View style={styles.iconBadge}>
-                        <Text style={styles.iconText}>{item.icon}</Text>
-                    </View>
-
-                    <Text style={styles.slideTitle}>{item.title}</Text>
-                    <Text style={styles.slideSubtitle}>{item.subtitle}</Text>
-                    <Text style={styles.slideDescription}>{item.description}</Text>
-                </View>
-            </View>
-        );
-    };
-
-    const renderPagination = () => {
-        return (
-            <View style={styles.pagination}>
-                {SLIDES.map((_, index) => {
-                    const inputRange = [
-                        (index - 1) * width,
-                        index * width,
-                        (index + 1) * width,
-                    ];
-
-                    const dotWidth = scrollX.interpolate({
-                        inputRange,
-                        outputRange: [10, 30, 10],
-                        extrapolate: 'clamp',
-                    });
-
-                    const dotOpacity = scrollX.interpolate({
-                        inputRange,
-                        outputRange: [0.4, 1, 0.4],
-                        extrapolate: 'clamp',
-                    });
-
-                    return (
-                        <Animated.View
-                            key={index}
-                            style={[
-                                styles.dot,
-                                {
-                                    width: dotWidth,
-                                    opacity: dotOpacity,
-                                    backgroundColor: index === currentIndex ? COLORS.primary : COLORS.gray,
-                                },
-                            ]}
-                        />
-                    );
-                })}
+                <Text style={styles.progressText}>
+                    {currentIndex + 1} / {SLIDES.length}
+                </Text>
             </View>
         );
     };
 
     return (
         <View style={styles.container}>
-            <StatusBar barStyle="light-content" backgroundColor={COLORS.primary} />
+            {/* Skip Button */}
+            <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
+                <Text style={styles.skipText}>Passer</Text>
+            </TouchableOpacity>
 
-            {/* Header with Skip button */}
-            <View style={styles.header}>
-                <View style={styles.headerLeft} />
-                <TouchableOpacity onPress={handleSkip} style={styles.skipButton}>
-                    <Text style={styles.skipText}>Passer</Text>
-                    <Ionicons name="arrow-forward" size={16} color={COLORS.gray} />
-                </TouchableOpacity>
+            {/* Progress Bar */}
+            <View style={styles.progressWrapper}>
+                <ProgressBar />
             </View>
 
             {/* Slides */}
-            <FlatList
+            <Animated.FlatList
                 ref={flatListRef}
                 data={SLIDES}
-                renderItem={renderSlide}
+                renderItem={renderItem}
                 keyExtractor={(item) => item.id}
                 horizontal
                 pagingEnabled
@@ -187,52 +148,26 @@ export default function OnboardingScreen() {
                     [{ nativeEvent: { contentOffset: { x: scrollX } } }],
                     { useNativeDriver: false }
                 )}
-                onMomentumScrollEnd={(event) => {
-                    const index = Math.round(event.nativeEvent.contentOffset.x / width);
+                onMomentumScrollEnd={(e) => {
+                    const index = Math.round(e.nativeEvent.contentOffset.x / width);
                     setCurrentIndex(index);
                 }}
-                scrollEventThrottle={16}
             />
 
-            {/* Pagination dots */}
-            {renderPagination()}
-
-            {/* Bottom buttons */}
+            {/* Next Button */}
             <View style={styles.bottomSection}>
-                <TouchableOpacity
-                    style={styles.nextButton}
-                    onPress={handleNext}
-                    activeOpacity={0.9}
-                >
+                <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
                     <LinearGradient
                         colors={[COLORS.primary, COLORS.primaryDark]}
                         style={styles.nextButtonGradient}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 0 }}
                     >
                         <Text style={styles.nextButtonText}>
                             {currentIndex === SLIDES.length - 1 ? 'Commencer' : 'Suivant'}
                         </Text>
-                        <Ionicons
-                            name={currentIndex === SLIDES.length - 1 ? 'checkmark' : 'arrow-forward'}
-                            size={22}
-                            color={COLORS.white}
-                        />
                     </LinearGradient>
                 </TouchableOpacity>
-
-                {/* Profile indicators */}
-                <View style={styles.profileIndicators}>
-                    {SLIDES.map((slide, index) => (
-                        <View
-                            key={slide.id}
-                            style={[
-                                styles.profileIndicator,
-                                currentIndex === index && styles.profileIndicatorActive,
-                            ]}
-                        >
-                            <Text style={styles.profileIndicatorIcon}>{slide.icon}</Text>
-                        </View>
-                    ))}
-                </View>
             </View>
         </View>
     );
@@ -241,162 +176,89 @@ export default function OnboardingScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: COLORS.white,
-    },
-
-    // Header
-    header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingHorizontal: 20,
-        paddingTop: 50,
-        paddingBottom: 10,
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        zIndex: 10,
-    },
-    headerLeft: {
-        width: 60,
+        backgroundColor: COLORS.background,
     },
     skipButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingVertical: 8,
-        paddingHorizontal: 16,
-        backgroundColor: 'rgba(255,255,255,0.9)',
-        borderRadius: 20,
+        position: 'absolute',
+        top: 60,
+        right: 24,
+        zIndex: 10,
+        padding: 8,
     },
     skipText: {
+        fontSize: 15,
+        fontWeight: '500',
         color: COLORS.gray,
-        fontSize: 14,
-        fontWeight: '600',
-        marginRight: 4,
     },
-
-    // Slide
-    slide: {
-        width: width,
-        flex: 1,
+    progressWrapper: {
+        paddingTop: 100,
+        paddingHorizontal: 32,
     },
-    imageContainer: {
-        height: height * 0.40,
-        position: 'relative',
+    progressContainer: {
+        alignItems: 'center',
     },
-    slideImage: {
+    progressBackground: {
         width: '100%',
+        height: 6,
+        backgroundColor: 'rgba(0, 200, 83, 0.2)',
+        borderRadius: 3,
+        overflow: 'hidden',
+    },
+    progressFill: {
         height: '100%',
+        backgroundColor: COLORS.primary,
+        borderRadius: 3,
     },
-    imageGradient: {
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        height: 100,
+    progressText: {
+        marginTop: 8,
+        fontSize: 14,
+        color: COLORS.gray,
+        fontWeight: '500',
     },
-
-    // Content
-    slideContent: {
+    slide: {
+        width,
         flex: 1,
-        paddingHorizontal: 24,
-        paddingTop: 16,
-        alignItems: 'center',
-        justifyContent: 'flex-start',
-    },
-    iconBadge: {
-        width: 60,
-        height: 60,
-        borderRadius: 30,
-        backgroundColor: COLORS.primary + '20',
         justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: 16,
+        paddingHorizontal: 40,
     },
-    iconText: {
-        fontSize: 28,
+    emoji: {
+        fontSize: 80,
+        marginBottom: 32,
     },
-    slideTitle: {
-        fontSize: 28,
+    title: {
+        fontSize: 32,
         fontWeight: 'bold',
-        color: COLORS.black,
-        marginBottom: 8,
+        color: COLORS.text,
         textAlign: 'center',
-    },
-    slideSubtitle: {
-        fontSize: 18,
-        fontWeight: '600',
-        color: '#FF8C00',
         marginBottom: 16,
+    },
+    description: {
+        fontSize: 18,
+        color: COLORS.textSecondary,
         textAlign: 'center',
+        lineHeight: 28,
     },
-    slideDescription: {
-        fontSize: 16,
-        color: '#555555',
-        textAlign: 'center',
-        lineHeight: 24,
-        paddingHorizontal: 16,
-    },
-
-    // Pagination
-    pagination: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        alignItems: 'center',
-        paddingVertical: 20,
-    },
-    dot: {
-        height: 10,
-        borderRadius: 5,
-        marginHorizontal: 5,
-    },
-
-    // Bottom
     bottomSection: {
-        paddingHorizontal: 30,
-        paddingBottom: 40,
-        alignItems: 'center',
+        paddingHorizontal: 32,
+        paddingBottom: 50,
     },
     nextButton: {
-        width: '100%',
-        marginBottom: 20,
+        borderRadius: 16,
+        overflow: 'hidden',
+        shadowColor: COLORS.primary,
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.35,
+        shadowRadius: 12,
+        elevation: 8,
     },
     nextButtonGradient: {
-        flexDirection: 'row',
-        justifyContent: 'center',
+        paddingVertical: 18,
         alignItems: 'center',
-        paddingVertical: 16,
-        borderRadius: 30,
     },
     nextButtonText: {
-        color: COLORS.white,
         fontSize: 18,
-        fontWeight: 'bold',
-        marginRight: 8,
-    },
-
-    // Profile indicators
-    profileIndicators: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        gap: 16,
-    },
-    profileIndicator: {
-        width: 44,
-        height: 44,
-        borderRadius: 22,
-        backgroundColor: '#F5F5F5',
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderWidth: 2,
-        borderColor: 'transparent',
-    },
-    profileIndicatorActive: {
-        borderColor: COLORS.primary,
-        backgroundColor: COLORS.primary + '20',
-    },
-    profileIndicatorIcon: {
-        fontSize: 20,
+        fontWeight: '600',
+        color: '#fff',
     },
 });
