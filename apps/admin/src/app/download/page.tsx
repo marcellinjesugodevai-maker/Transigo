@@ -206,14 +206,14 @@ export default function DownloadPage() {
                         </ul>
 
                         <a
-                            href="/apks/transigo-passenger-v2.apk"
-                            download="TransiGo-Passenger-v2.apk"
+                            href="/apks/transigo-passenger.apk"
+                            download="TransiGo-Passenger.apk"
                             className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 px-6 rounded-xl flex items-center justify-center gap-3 transition-colors shadow-lg shadow-blue-600/20 group-hover:shadow-blue-600/40"
                         >
                             <Download size={24} />
                             <span>Télécharger APK (Bêta)</span>
                         </a>
-                        <p className="text-center text-sm text-gray-500 mt-4">Version 2.0.0 • Android 8+</p>
+                        <p className="text-center text-sm text-gray-500 mt-4">Version 2.1.0 • Janvier 2026</p>
                     </div>
 
                     {/* Business Card */}
@@ -245,14 +245,14 @@ export default function DownloadPage() {
                         </ul>
 
                         <a
-                            href="/apks/transigo-business-v2.apk"
-                            download="TransiGo-Business-v2.apk"
+                            href="/apks/transigo-business.apk"
+                            download="TransiGo-Business.apk"
                             className="w-full bg-gradient-to-r from-[#00C853] to-[#009624] hover:from-[#00E676] hover:to-[#00C853] text-white font-bold py-4 px-6 rounded-xl flex items-center justify-center gap-3 transition-all shadow-lg shadow-green-600/20 group-hover:shadow-green-600/40"
                         >
                             <Download size={24} />
                             <span>Télécharger APK (Bêta)</span>
                         </a>
-                        <p className="text-center text-sm text-gray-500 mt-4">Version 2.0.0 • Android 8+</p>
+                        <p className="text-center text-sm text-gray-500 mt-4">Version 2.1.0 • Janvier 2026</p>
                     </div>
 
                 </div>
