@@ -166,11 +166,83 @@ export default function DriverHomeScreen() {
         }
     }, [isOnline]);
 
-    const toggleOnline = () => {
+    // ============================================
+    // GPS Tracking & Online Status
+    // ============================================
+    const locationIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+    const startLocationTracking = async () => {
+        if (locationIntervalRef.current) return; // Déjà en cours
+
+        try {
+            const Location = await import('expo-location');
+
+            // Demander permission
+            const { status } = await Location.requestForegroundPermissionsAsync();
+            if (status !== 'granted') {
+                Alert.alert('GPS requis', 'Activez la localisation pour recevoir des courses.');
+                return false;
+            }
+
+            // Première position immédiate
+            const loc = await Location.getCurrentPositionAsync({});
+            if (driver?.id) {
+                const { driverService } = await import('../../src/services/supabaseService');
+                await driverService.updateLocation(driver.id, loc.coords.latitude, loc.coords.longitude);
+            }
+
+            // Puis toutes les 10 secondes
+            locationIntervalRef.current = setInterval(async () => {
+                try {
+                    const newLoc = await Location.getCurrentPositionAsync({});
+                    if (driver?.id) {
+                        const { driverService } = await import('../../src/services/supabaseService');
+                        await driverService.updateLocation(driver.id, newLoc.coords.latitude, newLoc.coords.longitude);
+                    }
+                } catch (e) {
+                    console.log('GPS update error:', e);
+                }
+            }, 10000); // 10 secondes
+
+            return true;
+        } catch (error) {
+            console.error('Location tracking error:', error);
+            return false;
+        }
+    };
+
+    const stopLocationTracking = () => {
+        if (locationIntervalRef.current) {
+            clearInterval(locationIntervalRef.current);
+            locationIntervalRef.current = null;
+        }
+    };
+
+    // Cleanup au démontage
+    useEffect(() => {
+        return () => stopLocationTracking();
+    }, []);
+
+    const toggleOnline = async () => {
         if (isOnline) {
             Alert.alert('Passer hors ligne ?', 'Vous ne recevrez plus de courses', [
                 { text: 'Annuler', style: 'cancel' },
-                { text: 'Confirmer', onPress: () => setIsOnline(false) },
+                {
+                    text: 'Confirmer',
+                    onPress: async () => {
+                        // 1️⃣ Arrêter le tracking GPS
+                        stopLocationTracking();
+
+                        // 2️⃣ Mettre à jour Supabase
+                        if (driver?.id) {
+                            const { driverService } = await import('../../src/services/supabaseService');
+                            await driverService.setOnlineStatus(driver.id, false);
+                        }
+
+                        // 3️⃣ Mettre à jour l'état local
+                        setIsOnline(false);
+                    }
+                },
             ]);
         } else {
             // Vérifier le solde wallet avant de passer en ligne
@@ -186,6 +258,18 @@ export default function DriverHomeScreen() {
                 );
                 return;
             }
+
+            // 1️⃣ Démarrer le tracking GPS
+            const gpsStarted = await startLocationTracking();
+            if (!gpsStarted) return;
+
+            // 2️⃣ Mettre à jour Supabase
+            if (driver?.id) {
+                const { driverService } = await import('../../src/services/supabaseService');
+                await driverService.setOnlineStatus(driver.id, true);
+            }
+
+            // 3️⃣ Mettre à jour l'état local
             setIsOnline(true);
         }
     };

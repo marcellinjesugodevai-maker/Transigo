@@ -119,8 +119,33 @@ export default function FindingDriverScreen() {
 
             console.log("Course créée:", ride?.id);
 
-            // 2. S'abonner aux changements (Accepted)
+            // 2. Lancer le système de notification cascade
+            // Notifie le chauffeur le plus proche, attend 15s, puis le suivant...
             if (ride) {
+                rideService.notifyDriversCascade(
+                    ride.id,
+                    pickupCoords.latitude,
+                    pickupCoords.longitude,
+                    {
+                        pickupAddress: rideData.pickup_address,
+                        dropoffAddress: rideData.dropoff_address,
+                        price: rideData.price,
+                        distance: rideData.distance_km,
+                        vehicleType: rideData.vehicle_type,
+                    },
+                    {
+                        timeoutSeconds: 15,  // 15 secondes par chauffeur
+                        maxDrivers: 5,       // Max 5 chauffeurs
+                        radiusKm: 5,         // Rayon de 5km
+                    }
+                ).then(result => {
+                    console.log('[Cascade] Result:', result);
+                    if (!result.success) {
+                        console.log('Aucun chauffeur n\'a accepté la course');
+                    }
+                });
+
+                // 3. S'abonner aux changements (Accepted)
                 const sub = rideService.subscribeToRide(ride.id, async (updatedRide) => {
                     console.log("Ride update:", updatedRide.status);
 

@@ -160,27 +160,85 @@ export const rideService = {
             )
             .subscribe();
     },
+    // ============================================
+    // Fonction utilitaire : Calcul de distance Haversine
+    // Retourne la distance en km entre deux points GPS
+    // ============================================
+    haversineDistance: (lat1: number, lng1: number, lat2: number, lng2: number): number => {
+        const R = 6371; // Rayon de la Terre en km
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLng = (lng2 - lng1) * Math.PI / 180;
 
-    // Récupérer les chauffeurs en ligne à proximité
-    getNearbyDrivers: async (lat: number, lng: number, radiusKm: number = 5) => {
-        // Note: En production, utiliser PostGIS pour une vraie recherche géospatiale
+        const a =
+            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLng / 2) * Math.sin(dLng / 2);
+
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c; // Distance en km
+    },
+
+    // Récupérer les chauffeurs en ligne à proximité (AMÉLIORÉ)
+    getNearbyDrivers: async (
+        lat: number,
+        lng: number,
+        radiusKm: number = 5,
+        vehicleType?: string,
+        profileType?: 'driver' | 'delivery'
+    ) => {
+        // 1️⃣ Récupérer tous les chauffeurs en ligne et vérifiés
         const { data, error } = await supabase
             .from('drivers')
-            .select('id, first_name, current_lat, current_lng, rating, vehicle_type, profile_type')
+            .select('id, first_name, last_name, current_lat, current_lng, rating, vehicle_type, profile_type, avatar_url, phone')
             .eq('is_online', true)
+            .eq('is_verified', true) // Seulement les chauffeurs validés !
             .not('current_lat', 'is', null);
 
-        // Filtrer par distance (approximation simple)
-        const nearbyDrivers = data?.filter(driver => {
-            if (!driver.current_lat || !driver.current_lng) return false;
-            const distance = Math.sqrt(
-                Math.pow(driver.current_lat - lat, 2) +
-                Math.pow(driver.current_lng - lng, 2)
-            ) * 111; // Approximation en km
-            return distance <= radiusKm;
-        });
+        if (error || !data) {
+            return { drivers: [], error };
+        }
 
-        return { drivers: nearbyDrivers || [], error };
+        // 2️⃣ Calculer la distance avec Haversine et enrichir les données
+        const driversWithDistance = data
+            .map(driver => {
+                if (!driver.current_lat || !driver.current_lng) return null;
+
+                const distance = rideService.haversineDistance(
+                    lat, lng,
+                    driver.current_lat, driver.current_lng
+                );
+
+                return {
+                    ...driver,
+                    distance: Math.round(distance * 100) / 100, // Arrondi à 2 décimales
+                    distanceText: distance < 1
+                        ? `${Math.round(distance * 1000)}m`
+                        : `${distance.toFixed(1)}km`,
+                    eta: Math.ceil(distance * 2), // Estimation: 30km/h en ville = 2min/km
+                };
+            })
+            .filter((d): d is NonNullable<typeof d> => d !== null);
+
+        // 3️⃣ Filtrer par rayon et par type si spécifié
+        let filteredDrivers = driversWithDistance.filter(d => d.distance <= radiusKm);
+
+        if (vehicleType) {
+            filteredDrivers = filteredDrivers.filter(d => d.vehicle_type === vehicleType);
+        }
+
+        if (profileType) {
+            filteredDrivers = filteredDrivers.filter(d => d.profile_type === profileType);
+        }
+
+        // 4️⃣ Trier par distance (le plus proche en premier)
+        filteredDrivers.sort((a, b) => a.distance - b.distance);
+
+        return {
+            drivers: filteredDrivers,
+            error: null,
+            totalFound: filteredDrivers.length,
+            closestDriver: filteredDrivers[0] || null,
+        };
     },
 
     // Historique des courses du passager
@@ -192,6 +250,212 @@ export const rideService = {
             .order('created_at', { ascending: false })
             .limit(20);
         return { rides: data, error };
+    },
+
+    // ============================================
+    // SYSTÈME DE NOTIFICATION CASCADE
+    // Notifie les chauffeurs un par un (le plus proche en premier)
+    // Si pas de réponse après timeout, passe au suivant
+    // ============================================
+
+    // Notifier un seul chauffeur via push notification
+    notifyDriver: async (driverId: string, rideId: string, rideInfo: {
+        pickupAddress: string;
+        dropoffAddress: string;
+        price: number;
+        distance: number;
+    }) => {
+        try {
+            // Récupérer le push token du chauffeur
+            const { data: driver } = await supabase
+                .from('drivers')
+                .select('push_token, first_name')
+                .eq('id', driverId)
+                .single();
+
+            if (!driver?.push_token) {
+                console.log(`Driver ${driverId} has no push token`);
+                return { success: false, reason: 'no_token' };
+            }
+
+            // Mettre à jour la course avec le chauffeur notifié actuellement
+            await supabase
+                .from('rides')
+                .update({
+                    current_notified_driver: driverId,
+                    notified_at: new Date().toISOString()
+                })
+                .eq('id', rideId);
+
+            // Envoyer la notification push via Expo
+            const message = {
+                to: driver.push_token,
+                sound: 'default',
+                title: '🚗 Nouvelle course !',
+                body: `${rideInfo.pickupAddress} → ${rideInfo.dropoffAddress}\n💰 ${rideInfo.price.toLocaleString('fr-FR')} F • ${rideInfo.distance.toFixed(1)} km`,
+                data: {
+                    type: 'new_ride',
+                    rideId,
+                    pickupAddress: rideInfo.pickupAddress,
+                    dropoffAddress: rideInfo.dropoffAddress,
+                    price: rideInfo.price,
+                },
+            };
+
+            const response = await fetch('https://exp.host/--/api/v2/push/send', {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(message),
+            });
+
+            const result = await response.json();
+            console.log(`Push sent to driver ${driverId}:`, result);
+
+            return { success: true, pushResult: result };
+        } catch (error) {
+            console.error('Error notifying driver:', error);
+            return { success: false, reason: 'error', error };
+        }
+    },
+
+    // Système de notification cascade complet
+    notifyDriversCascade: async (
+        rideId: string,
+        pickupLat: number,
+        pickupLng: number,
+        rideInfo: {
+            pickupAddress: string;
+            dropoffAddress: string;
+            price: number;
+            distance: number;
+            vehicleType?: string;
+        },
+        options: {
+            timeoutSeconds?: number;  // Temps d'attente avant de passer au suivant
+            maxDrivers?: number;       // Nombre max de chauffeurs à notifier
+            radiusKm?: number;         // Rayon de recherche
+        } = {}
+    ) => {
+        const {
+            timeoutSeconds = 15,
+            maxDrivers = 5,
+            radiusKm = 5
+        } = options;
+
+        // 1️⃣ Récupérer les chauffeurs proches triés par distance
+        const { drivers } = await rideService.getNearbyDrivers(
+            pickupLat,
+            pickupLng,
+            radiusKm,
+            rideInfo.vehicleType
+        );
+
+        if (!drivers || drivers.length === 0) {
+            return {
+                success: false,
+                reason: 'no_drivers_available',
+                driversNotified: 0
+            };
+        }
+
+        // Limiter le nombre de chauffeurs à notifier
+        const driversToNotify = drivers.slice(0, maxDrivers);
+
+        console.log(`[Cascade] Found ${drivers.length} drivers, will notify ${driversToNotify.length}`);
+
+        // 2️⃣ Notifier le premier chauffeur
+        let currentIndex = 0;
+        let accepted = false;
+
+        const notifyNext = async (): Promise<{
+            success: boolean;
+            acceptedBy?: string;
+            driversNotified: number;
+        }> => {
+            if (currentIndex >= driversToNotify.length) {
+                return { success: false, driversNotified: currentIndex };
+            }
+
+            const driver = driversToNotify[currentIndex];
+            console.log(`[Cascade] Notifying driver #${currentIndex + 1}: ${driver.first_name} (${driver.distanceText} away)`);
+
+            // Notifier ce chauffeur
+            await rideService.notifyDriver(driver.id, rideId, rideInfo);
+
+            // Attendre le timeout ou l'acceptation
+            return new Promise((resolve) => {
+                const timeout = setTimeout(async () => {
+                    // Vérifier si la course a été acceptée
+                    const { ride } = await rideService.getRide(rideId);
+
+                    if (ride?.status === 'accepted') {
+                        resolve({
+                            success: true,
+                            acceptedBy: ride.driver_id,
+                            driversNotified: currentIndex + 1
+                        });
+                    } else {
+                        // Pas acceptée, passer au suivant
+                        console.log(`[Cascade] Driver ${driver.id} didn't respond, trying next...`);
+                        currentIndex++;
+                        resolve(notifyNext());
+                    }
+                }, timeoutSeconds * 1000);
+
+                // Aussi s'abonner aux changements pour réagir plus vite si acceptée
+                const channel = supabase
+                    .channel(`cascade-${rideId}`)
+                    .on('postgres_changes', {
+                        event: 'UPDATE',
+                        schema: 'public',
+                        table: 'rides',
+                        filter: `id=eq.${rideId}`
+                    }, (payload) => {
+                        if (payload.new.status === 'accepted') {
+                            clearTimeout(timeout);
+                            supabase.removeChannel(channel);
+                            resolve({
+                                success: true,
+                                acceptedBy: payload.new.driver_id,
+                                driversNotified: currentIndex + 1
+                            });
+                        }
+                    })
+                    .subscribe();
+            });
+        };
+
+        return notifyNext();
+    },
+
+    // Rejeter une course (quand un chauffeur refuse explicitement)
+    rejectRide: async (rideId: string, driverId: string, reason?: string) => {
+        // Ajouter ce chauffeur à la liste des rejets
+        const { data: ride } = await supabase
+            .from('rides')
+            .select('rejected_drivers')
+            .eq('id', rideId)
+            .single();
+
+        const rejectedDrivers = ride?.rejected_drivers || [];
+        rejectedDrivers.push({
+            driver_id: driverId,
+            rejected_at: new Date().toISOString(),
+            reason: reason || 'declined'
+        });
+
+        await supabase
+            .from('rides')
+            .update({
+                rejected_drivers: rejectedDrivers,
+                current_notified_driver: null
+            })
+            .eq('id', rideId);
+
+        return { success: true };
     },
 };
 
