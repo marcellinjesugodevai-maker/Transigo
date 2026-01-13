@@ -245,12 +245,12 @@ export default function DownloadPage() {
                         </ul>
 
                         <a
-                            href="/apks/transigo-business.apk"
-                            download="TransiGo-Business.apk"
+                            href="/apks/transigo-business-v2.apk"
+                            download="TransiGo-Business-v2.apk"
                             className="w-full bg-gradient-to-r from-[#00C853] to-[#009624] hover:from-[#00E676] hover:to-[#00C853] text-white font-bold py-4 px-6 rounded-xl flex items-center justify-center gap-3 transition-all shadow-lg shadow-green-600/20 group-hover:shadow-green-600/40"
                         >
                             <Download size={24} />
-                            <span>Télécharger APK (Bêta)</span>
+                            <span>Télécharger APK (Bêta v2)</span>
                         </a>
                         <p className="text-center text-sm text-gray-500 mt-4">Version 2.1.0 • Janvier 2026</p>
                     </div>
