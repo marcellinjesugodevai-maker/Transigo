@@ -118,8 +118,15 @@ export default function SplashScreen() {
                 router.replace('/(auth)/login' as any);
             } else if (!driver.isVerified) {
                 // Driver existe mais PAS ENCORE VALIDÉ par l'admin
-                // Aller à l'écran d'attente de validation
-                router.replace('/(auth)/register-pending' as any);
+
+                // Si pas de plaque d'immatriculation, on considère l'onboarding INCOMPLET
+                // On redirige vers l'intro pour qu'il finisse
+                if (!driver.vehiclePlate) {
+                    router.replace('/(auth)/onboarding/intro' as any);
+                } else {
+                    // Onboarding complet (Documents soumis), on attend la validation
+                    router.replace('/(auth)/register-pending' as any);
+                }
             } else {
                 // Driver validé : aller au home
                 router.replace('/(tabs)/home' as any);
