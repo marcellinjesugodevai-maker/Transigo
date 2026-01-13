@@ -31,9 +31,9 @@ export default function RootLayout() {
     useEffect(() => {
         async function prepare() {
             try {
-                // Pre-load fonts (Ionicons for all icons in the app)
+                // Pre-load fonts (Ionicons from local asset to fix bundling)
                 await Font.loadAsync({
-                    ...Ionicons.font,
+                    Ionicons: require('../assets/fonts/Ionicons.ttf'),
                 });
 
                 // Pre-load essential app assets only (onboarding uses pure code now)
