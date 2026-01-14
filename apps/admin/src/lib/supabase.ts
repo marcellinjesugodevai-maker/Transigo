@@ -168,21 +168,27 @@ export const adminService = {
         return { error };
     },
 
-    // Supprimer un chauffeur
+    // Supprimer un chauffeur (Auth + DB)
     deleteDriver: async (driverId: string) => {
-        // Supprimer d'abord les transactions wallet liées
-        await supabase
-            .from('wallet_transactions')
-            .delete()
-            .eq('driver_id', driverId);
+        try {
+            const response = await fetch('/api/delete-user', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ userId: driverId }),
+            });
 
-        // Puis supprimer le chauffeur
-        const { error } = await supabase
-            .from('drivers')
-            .delete()
-            .eq('id', driverId);
+            const data = await response.json();
 
-        return { error };
+            if (!response.ok) {
+                return { error: { message: data.error || 'Erreur lors de la suppression' } };
+            }
+
+            return { error: null };
+        } catch (e: any) {
+            return { error: e };
+        }
     },
 
     // Modifier un chauffeur

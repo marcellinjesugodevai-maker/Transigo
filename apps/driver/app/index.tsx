@@ -13,7 +13,7 @@ import {
     Image,
     StatusBar,
 } from 'react-native';
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useDriverStore } from '../src/stores/driverStore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -29,6 +29,7 @@ const COLORS = {
 };
 
 export default function SplashScreen() {
+    const router = useRouter();
     const { driver } = useDriverStore();
     const [isHydrated, setIsHydrated] = useState(false);
 
@@ -110,26 +111,38 @@ export default function SplashScreen() {
 
             const hasSeenOnboarding = await AsyncStorage.getItem('hasSeenOnboarding');
 
-            if (!hasSeenOnboarding) {
-                // Première fois : afficher l'onboarding
-                router.replace('/(auth)/onboarding' as any);
-            } else if (!driver) {
-                // Pas de driver sauvegardé : aller au login
-                router.replace('/(auth)/login' as any);
-            } else if (!driver.isVerified) {
-                // Driver existe mais PAS ENCORE VALIDÉ par l'admin
+            if (driver) {
+                // Driver connecté. Vérifions si le profil est COMPLET.
+                // NOTE: 'driver' est l'ancien string pour 'VTC', on supporte les deux.
+                const isDriverOrDelivery = driver.profileType === 'VTC' || driver.profileType === 'driver' || driver.profileType === 'delivery';
+                const plateStatus = driver.vehiclePlate ? driver.vehiclePlate.toUpperCase().trim() : '';
 
-                // Si pas de plaque d'immatriculation, on considère l'onboarding INCOMPLET
-                // On redirige vers l'intro pour qu'il finisse
-                if (!driver.vehiclePlate) {
-                    router.replace('/(auth)/onboarding/intro' as any);
-                } else {
-                    // Onboarding complet (Documents soumis), on attend la validation
+                // Si c'est un chauffeur/livreur, il DOIT avoir une plaque valide (pas PENDING)
+                const isPlateInvalid = !driver.vehiclePlate || plateStatus === 'PENDING';
+
+                const isIncomplete = !driver.profileType || (isDriverOrDelivery && isPlateInvalid);
+
+                console.log('[NAV CHECK] Profile:', driver.profileType);
+                console.log('[NAV CHECK] Plate:', driver.vehiclePlate, 'Status:', plateStatus);
+                console.log('[NAV CHECK] IsIncomplete:', isIncomplete);
+
+                if (isIncomplete) {
+                    // Onboarding incomplet -> Retourner à l'intro
+                    router.replace('/onboarding/intro' as any);
+                } else if (!driver.isVerified) {
+                    // Complet mais pas encore validé par admin
                     router.replace('/(auth)/register-pending' as any);
+                } else {
+                    // Complet et validé -> Home
+                    console.log('[NAV CHECK] Going to Home');
+                    router.replace('/(tabs)/home' as any);
                 }
+            } else if (!hasSeenOnboarding) {
+                // Première fois : afficher l'onboarding
+                router.replace('/onboarding/intro' as any);
             } else {
-                // Driver validé : aller au home
-                router.replace('/(tabs)/home' as any);
+                // Pas de driver et onboarding déjà vu -> Login
+                router.replace('/(auth)/login' as any);
             }
         };
 

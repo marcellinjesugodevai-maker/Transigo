@@ -23,6 +23,8 @@ import { COLORS, SPACING, RADIUS } from '@/constants';
 import { useRideStore, useThemeStore, useLanguageStore } from '@/stores';
 import { getTranslation } from '@/i18n/translations';
 import { locationService } from '@/services/locationService';
+import { rideService } from '@/services/supabaseService';
+import { carpoolService } from '@/services/carpoolService';
 
 const { width, height } = Dimensions.get('window');
 
@@ -113,6 +115,36 @@ export default function RideTrackingScreen() {
         { id: 'driver', latitude: simulatedDriverPos.latitude, longitude: simulatedDriverPos.longitude },
     ], [simulatedDriverPos.latitude, simulatedDriverPos.longitude]);
 
+    // Chargement données Covoiturage si nécessaire
+    useEffect(() => {
+        if (params.type === 'shared' && params.rideId) {
+            const loadSharedRide = async () => {
+                const { ride } = await carpoolService.getRide(params.rideId as string);
+                if (ride) {
+                    // Update store with shared ride info specifically for tracking
+                    // We map the shared ride driver to the store's assignedDriver structure
+                    useRideStore.getState().setAssignedDriver({
+                        id: ride.driver_id || ride.creator_id,
+                        firstName: ride.driver_name?.split(' ')[0] || 'Chauffeur',
+                        lastName: ride.driver_name?.split(' ').slice(1).join(' ') || '',
+                        phone: ride.driver_phone || '',
+                        rating: 4.8, // Mock or fetch real
+                        totalRides: 100,
+                        vehicleBrand: ride.vehicle_type || 'Voiture',
+                        vehicleModel: '',
+                        vehicleColor: '',
+                        vehiclePlate: '',
+                        profilePhotoUrl: null
+                    });
+
+                    // Also update pickup/dropoff if needed
+                    // ...
+                }
+            };
+            loadSharedRide();
+        }
+    }, [params.type, params.rideId]);
+
     useEffect(() => {
         // Animation d'entrée
         Animated.spring(slideAnim, {
@@ -129,40 +161,43 @@ export default function RideTrackingScreen() {
         }
     }, []);
 
-    // Effet séparé pour le mouvement du chauffeur qui dépend de la route
+    // Suivi réel du chauffeur via Supabase
     useEffect(() => {
-        if (routeToPickup.length < 2) return;
+        if (!assignedDriver?.id) return;
 
-        // Commencer au début de la route
-        currentRouteIndexRef.current = 0;
+        console.log("Subscribing to driver location:", assignedDriver.id);
+        const subscription = rideService.subscribeToDriverLocation(assignedDriver.id, (location) => {
+            console.log("Real-time driver location update:", location);
 
-        const driverInterval = setInterval(() => {
-            const route = routeToPickup;
+            // Mise à jour de la position du chauffeur
+            setSimulatedDriverPos({
+                latitude: location.lat,
+                longitude: location.lng
+            });
 
-            if (currentRouteIndexRef.current < route.length - 1) {
-                // Avancer de plusieurs points à chaque intervalle pour un mouvement fluide
-                const stepsToMove = Math.min(3, route.length - 1 - currentRouteIndexRef.current);
-                currentRouteIndexRef.current += stepsToMove;
+            // Recalculer ETA approximatif (distance à vol d'oiseau * 2 min/km + trafic)
+            const dist = rideService.haversineDistance(
+                location.lat, location.lng,
+                pickupCoords.latitude, pickupCoords.longitude
+            );
+            setCurrentEta(Math.ceil(dist * 3)); // ~20km/h en ville
 
-                const nextPoint = route[currentRouteIndexRef.current];
+            // Mise à jour dans le store global
+            updateDriverLocation({ latitude: location.lat, longitude: location.lng });
+        });
 
-                setSimulatedDriverPos({
-                    latitude: nextPoint.latitude,
-                    longitude: nextPoint.longitude
-                });
+        return () => {
+            subscription.unsubscribe();
+        };
+    }, [assignedDriver?.id]);
 
-                // Calculer l'ETA basé sur la progression
-                const progressPercent = currentRouteIndexRef.current / (route.length - 1);
-                const remainingEta = (1 - progressPercent) * (driverEta || 4);
-                setCurrentEta(Math.max(0, remainingEta));
-            } else {
-                // Arrivé au pickup
-                setCurrentEta(0);
-            }
-        }, 2000);
-
-        return () => clearInterval(driverInterval);
-    }, [routeToPickup]);
+    // Calcul initial de la route (pour affichage seulement)
+    useEffect(() => {
+        if (!routeFetchedRef.current) {
+            routeFetchedRef.current = true;
+            fetchRouteToPickup();
+        }
+    }, []);
 
     // Mettre à jour le message de statut
     useEffect(() => {
@@ -279,7 +314,7 @@ export default function RideTrackingScreen() {
         vehicleModel: 'Corolla',
         vehicleColor: 'Grise',
         vehiclePlate: 'AB-1234-CI',
-        profilePhotoUrl: null, // URL from Supabase Storage
+        photo: null, // URL from Supabase Storage
     };
 
     return (
@@ -345,9 +380,9 @@ export default function RideTrackingScreen() {
                     <View style={styles.driverInfo}>
                         {/* Avatar - Photo de profil ou emoji fallback */}
                         <View style={styles.driverAvatar}>
-                            {driver.profilePhotoUrl ? (
+                            {driver.photo ? (
                                 <Image
-                                    source={{ uri: driver.profilePhotoUrl }}
+                                    source={{ uri: driver.photo }}
                                     style={styles.profilePhoto}
                                 />
                             ) : (

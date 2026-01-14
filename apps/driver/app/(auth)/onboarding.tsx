@@ -13,10 +13,12 @@ import {
     FlatList,
     TouchableOpacity,
     Animated,
+    Image,
 } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { DriverImage, DeliveryImage, SellerImage } from '../onboarding/profileAssets';
 
 const { width } = Dimensions.get('window');
 
@@ -30,12 +32,12 @@ const COLORS = {
 };
 
 // =============================================
-// ONBOARDING DATA - Text only with native emojis
+// ONBOARDING DATA - Base64 Images
 // =============================================
 
 interface OnboardingSlide {
     id: string;
-    emoji: string;
+    image: string;
     title: string;
     description: string;
 }
@@ -43,19 +45,19 @@ interface OnboardingSlide {
 const SLIDES: OnboardingSlide[] = [
     {
         id: '1',
-        emoji: '🚗',
+        image: DriverImage,
         title: 'Devenez Chauffeur VTC',
         description: 'Transportez des passagers et générez des revenus selon votre emploi du temps.',
     },
     {
         id: '2',
-        emoji: '📦',
+        image: DeliveryImage,
         title: 'Livrez des colis',
         description: 'Effectuez des livraisons rapides avec votre moto ou vélo. Flexibilité totale.',
     },
     {
         id: '3',
-        emoji: '💰',
+        image: SellerImage, // Using Seller Image as placeholder for "Economics/Business" theme
         title: 'Gagnez plus',
         description: 'Commissions avantageuses, paiements rapides et bonus réguliers.',
     },
@@ -91,8 +93,14 @@ export default function OnboardingScreen() {
 
     const renderItem = ({ item }: { item: OnboardingSlide }) => (
         <View style={styles.slide}>
-            {/* Emoji */}
-            <Text style={styles.emoji}>{item.emoji}</Text>
+            {/* Image */}
+            <View style={styles.imageContainer}>
+                <Image
+                    source={{ uri: item.image }}
+                    style={styles.image}
+                    resizeMode="contain"
+                />
+            </View>
 
             {/* Title */}
             <Text style={styles.title}>{item.title}</Text>
@@ -222,9 +230,16 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingHorizontal: 40,
     },
-    emoji: {
-        fontSize: 80,
+    imageContainer: {
+        width: width * 0.8,
+        height: width * 0.8,
         marginBottom: 32,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    image: {
+        width: '100%',
+        height: '100%',
     },
     title: {
         fontSize: 32,

@@ -3,9 +3,9 @@ import { useEffect, useState, useCallback } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
-import * as Font from 'expo-font';
+import { useFonts } from 'expo-font';
 import { Asset } from 'expo-asset';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
@@ -28,15 +28,19 @@ export default function RootLayout() {
     // Activer la synchro Wallet/Profil (Admin -> App)
     useDriverSync();
 
+    const [fontsLoaded, fontError] = useFonts({
+        ...Ionicons.font,
+        ...MaterialIcons.font,
+    });
+
+    useEffect(() => {
+        if (fontError) console.error('Error loading fonts:', fontError);
+    }, [fontError]);
+
     useEffect(() => {
         async function prepare() {
             try {
-                // Pre-load fonts (Ionicons from local asset to fix bundling)
-                await Font.loadAsync({
-                    Ionicons: require('../assets/fonts/Ionicons.ttf'),
-                });
-
-                // Pre-load essential app assets only (onboarding uses pure code now)
+                // Pre-load essential app assets
                 await Asset.loadAsync([
                     require('../assets/icon.png'),
                     require('../assets/splash.png'),
@@ -57,7 +61,7 @@ export default function RootLayout() {
         }
     }, [appIsReady]);
 
-    if (!appIsReady) {
+    if (!appIsReady || !fontsLoaded) {
         return null;
     }
 

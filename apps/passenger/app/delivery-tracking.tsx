@@ -22,6 +22,7 @@ import { COLORS, SPACING, RADIUS } from '@/constants';
 import { useThemeStore, useLanguageStore } from '@/stores';
 import { getTranslation } from '@/i18n/translations';
 import { locationService } from '@/services/locationService';
+import { rideService } from '@/services/supabaseService';
 
 const { width, height } = Dimensions.get('window');
 
@@ -80,38 +81,35 @@ export default function DeliveryTrackingScreen() {
             ])
         ).start();
 
-        // Simuler le mouvement du livreur
-        const moveInterval = setInterval(() => {
-            setDeliveryPersonLocation(prev => {
+        // TODO: Obtenir le vrai ID du livreur depuis les params ou une requête Supabase
+        // Pour l'instant on utilise un fallback ou un ID passé en paramètre
+        const driverId = params.driver_id as string;
+
+        let locationSubscription: any;
+
+        if (driverId) {
+            console.log("📡 Subscribing to delivery driver:", driverId);
+            locationSubscription = rideService.subscribeToDriverLocation(driverId, (location) => {
+                const { lat, lng } = location;
+                setDeliveryPersonLocation({ latitude: lat, longitude: lng });
+
+                // Recalculer ETA approximatif
                 const target = status === 'en_route_pickup' || status === 'at_pickup' || status === 'picked_up'
                     ? pickupCoords
                     : deliveryCoords;
 
-                const newLat = prev.latitude + (target.latitude - prev.latitude) * 0.1 + (Math.random() - 0.5) * 0.001;
-                const newLon = prev.longitude + (target.longitude - prev.longitude) * 0.1 + (Math.random() - 0.5) * 0.001;
-
-                return { latitude: newLat, longitude: newLon };
+                const dist = rideService.haversineDistance(lat, lng, target.latitude, target.longitude);
+                setEta(Math.ceil(dist * 3)); // ~20km/h
             });
-            setEta(prev => Math.max(1, prev - 0.5));
-        }, 3000);
+        }
 
-        // Simuler la progression des statuts
-        const statusTimers = [
-            setTimeout(() => setStatus('at_pickup'), 10000),
-            setTimeout(() => setStatus('picked_up'), 15000),
-            setTimeout(() => setStatus('en_route_delivery'), 18000),
-            setTimeout(() => setStatus('arrived'), 30000),
-            setTimeout(() => setStatus('delivered'), 35000),
-        ];
-
-        // Calculer la route
+        // Calculer la route initiale
         fetchRoute();
 
         return () => {
-            clearInterval(moveInterval);
-            statusTimers.forEach(t => clearTimeout(t));
+            if (locationSubscription) locationSubscription.unsubscribe();
         };
-    }, []);
+    }, [status, params.driver_id]);
 
     useEffect(() => {
         // Recalculer la route selon le statut

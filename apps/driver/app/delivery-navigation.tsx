@@ -23,6 +23,8 @@ import * as Speech from 'expo-speech';
 import * as Location from 'expo-location';
 import OSMMap from '../src/components/OSMMap';
 import { locationService, RouteStep } from '../src/services/locationService';
+import { useDriverStore } from '../src/stores/driverStore';
+import { driverService } from '../src/services/supabaseService';
 
 const { width, height } = Dimensions.get('window');
 
@@ -128,18 +130,27 @@ export default function DeliveryNavigationScreen() {
 
         (async () => {
             subscription = await Location.watchPositionAsync(
-                { accuracy: Location.Accuracy.High, distanceInterval: 5 },
-                (location) => {
+                { accuracy: Location.Accuracy.High, distanceInterval: 10, timeInterval: 3000 },
+                async (location) => {
                     const { latitude, longitude } = location.coords;
                     setDriverLocation({ lat: latitude, lng: longitude });
 
-                    // Mettre à jour la distance restante (approximation simple ou re-calcul périodique)
+                    // Mettre à jour la location dans Supabase
+                    try {
+                        const driverId = useDriverStore.getState().driver?.id;
+                        if (driverId) {
+                            await driverService.updateLocation(driverId, latitude, longitude);
+                        }
+                    } catch (err) {
+                        console.error("Erreur update location:", err);
+                    }
+
+                    // Mettre à jour la distance restante
                     const distToDest = getDistance(latitude, longitude, destCoords.lat, destCoords.lng);
                     setDistanceRemaining(distToDest / 1000);
 
                     // Logic de guidance vocale
                     if (allSteps.length > 0) {
-                        // Trouver le step le plus proche ou suivant
                         let nextStepIndex = currentStepIndex;
                         const currentStep = allSteps[nextStepIndex];
 
@@ -150,13 +161,11 @@ export default function DeliveryNavigationScreen() {
                                 currentStep.maneuver.location[0]
                             );
 
-                            // Si on est à moins de 20m du point de manoeuvre, on passe au suivant
                             if (distToStep < 20 && nextStepIndex < allSteps.length - 1) {
                                 nextStepIndex++;
                                 setCurrentStepIndex(nextStepIndex);
                             }
 
-                            // Annoncer le step si on s'en rapproche (ex: à 100m)
                             if (distToStep < 100 && lastSpokenStep.current !== nextStepIndex) {
                                 speakInstruction(translateInstruction(allSteps[nextStepIndex]));
                                 lastSpokenStep.current = nextStepIndex;
@@ -205,7 +214,7 @@ export default function DeliveryNavigationScreen() {
 
                 <View style={styles.headerOverlay}>
                     <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-                        <Ionicons name="close" size={24} color={COLORS.black} />
+                        <Text style={{ fontSize: 24, color: COLORS.black }}>❌</Text>
                     </TouchableOpacity>
                     <View style={styles.headerInfo}>
                         <Text style={styles.headerTitle}>
@@ -218,11 +227,9 @@ export default function DeliveryNavigationScreen() {
             <View style={styles.navPanel}>
                 <LinearGradient colors={[COLORS.primary, '#00A344']} style={styles.currentInstruction}>
                     <View style={styles.instructionIcon}>
-                        <Ionicons
-                            name={allSteps[currentStepIndex]?.maneuver?.type?.includes('turn') ? "arrow-forward" : (isPickup ? "restaurant" : "person")}
-                            size={36}
-                            color={COLORS.white}
-                        />
+                        <Text style={{ fontSize: 36, color: COLORS.white }}>
+                            {allSteps[currentStepIndex]?.maneuver?.type?.includes('turn') ? "➡️" : (isPickup ? "📦" : "👤")}
+                        </Text>
                     </View>
                     <View style={styles.instructionContent}>
                         <Text style={styles.instructionDistance}>
@@ -255,13 +262,13 @@ export default function DeliveryNavigationScreen() {
                 <View style={styles.actionsRow}>
                     <TouchableOpacity style={styles.actionBtn} onPress={openExternalMap}>
                         <View style={[styles.actionIcon, { backgroundColor: '#E8F5E9' }]}>
-                            <Ionicons name="navigate" size={22} color={COLORS.primary} />
+                            <Text style={{ fontSize: 22 }}>🗺️</Text>
                         </View>
                         <Text style={styles.actionLabel}>GPS Externe</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.actionBtn} onPress={() => Alert.alert('Appel client', 'Contact du client : 07 00 00 00 00')}>
                         <View style={[styles.actionIcon, { backgroundColor: '#E3F2FD' }]}>
-                            <Ionicons name="call" size={22} color="#2196F3" />
+                            <Text style={{ fontSize: 22 }}>📞</Text>
                         </View>
                         <Text style={styles.actionLabel}>Appeler</Text>
                     </TouchableOpacity>

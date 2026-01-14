@@ -61,9 +61,10 @@ export default function LeaderboardScreen() {
     const [loading, setLoading] = useState(true);
     const [leaderboard, setLeaderboard] = useState<any[]>([]);
 
-    const { xp, level, streakDays, activeChallenges } = useDriverPremiumsStore();
+    const { xp, level, streakDays, activeChallenges, fetchData } = useDriverPremiumsStore();
 
     useEffect(() => {
+        fetchData();
         loadLeaderboard();
     }, []);
 
@@ -125,7 +126,7 @@ export default function LeaderboardScreen() {
             {/* Header with XP */}
             <LinearGradient colors={['#9C27B0', '#7B1FA2']} style={styles.header}>
                 <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-                    <Ionicons name="arrow-back" size={24} color={COLORS.white} />
+                    <Text style={{ fontSize: 24, color: COLORS.white }}>⬅️</Text>
                 </TouchableOpacity>
                 <View style={styles.headerContent}>
                     <Text style={styles.headerTitle}>🏆 Classement & Badges</Text>

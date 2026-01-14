@@ -43,6 +43,7 @@ export interface ZonePrediction {
     changePercent: number;
     inMinutes: number;
     recommendation: string;
+    distance?: number;
 }
 
 export interface PremiumPlan {
@@ -105,42 +106,27 @@ export interface DriverPremiumState {
     addToSavings: (amount: number) => void;
     withdrawSavings: (amount: number) => void;
     completeChallenge: (id: string) => void;
+    fetchData: () => Promise<void>;
 }
-
-// --- MOCK DATA ---
-
-const MOCK_CLUBS: Club[] = [
-    { id: '1', name: 'Les Aigles de Cocody', zone: 'Cocody', members: 142, avatar: '🦅', description: 'Le club des chauffeurs elite de Cocody.', lastMessage: 'Embouteillage sur le pont !', lastMessageTime: '12m', unread: 2 },
-    { id: '2', name: 'Yopougon Express', zone: 'Yopougon', members: 89, avatar: '⚡', description: 'Rapidité et efficacité à Yopougon.', unread: 0 },
-    { id: '3', name: 'Marcory V.I.P', zone: 'Marcory', members: 56, avatar: '💎', description: 'Service premium pour la zone 4.', unread: 5 },
-];
-
-const MOCK_CHALLENGES: Challenge[] = [
-    { id: 'c1', title: 'Roi du Matin', description: 'Faire 5 courses entre 6h et 9h', target: 5, current: 2, reward: 500, expiresIn: '12h', type: 'rides' },
-    { id: 'c2', title: 'Week-end Guerrier', description: 'Gagner 50.000F ce week-end', target: 50000, current: 15000, reward: 1000, expiresIn: '2j', type: 'earnings' },
-];
-
-const MOCK_PREDICTIONS: ZonePrediction[] = [
-    { id: 'z1', zone: 'Cocody Centre', currentDemand: 'high', predictedDemand: 'surge', confidence: 85, trend: 'up', surgeMultiplier: 1.2, reason: 'Sorties bureaux', changePercent: 45, inMinutes: 15, recommendation: 'Allez-y maintenant' },
-    { id: 'z2', zone: 'Plateau', currentDemand: 'medium', predictedDemand: 'high', confidence: 70, trend: 'up', surgeMultiplier: 1.0, reason: 'Conférence', changePercent: 30, inMinutes: 30, recommendation: 'Préparez-vous' },
-    { id: 'z3', zone: 'Aéroport FHB', currentDemand: 'low', predictedDemand: 'surge', confidence: 90, trend: 'up', surgeMultiplier: 1.5, reason: 'Vol AF703', changePercent: 90, inMinutes: 60, recommendation: 'Captez les arrivées' },
-];
 
 // --- STORE ---
 
+import { premiumsService } from '../services/premiumsService';
+import { useDriverStore } from './driverStore';
+
 export const useDriverPremiumsStore = create<DriverPremiumState>((set, get) => ({
     // Initial State
-    xp: 2450,
-    level: 3, // Bronze
-    gloryPoints: 120,
-    streakDays: 4,
+    xp: 0,
+    level: 1,
+    gloryPoints: 0,
+    streakDays: 0,
 
     joinedClubs: [],
-    availableClubs: MOCK_CLUBS,
+    availableClubs: [],
 
-    activeChallenges: MOCK_CHALLENGES,
+    activeChallenges: [],
 
-    predictions: MOCK_PREDICTIONS,
+    predictions: [],
     lastPredictionUpdate: new Date(),
 
     homeMode: {
@@ -158,32 +144,88 @@ export const useDriverPremiumsStore = create<DriverPremiumState>((set, get) => (
     },
 
     savings: {
-        balance: 15000,
+        balance: 15000, // Mock for now, needs DB field
         goal: 100000,
         autoSavePercentage: 5,
     },
 
     // Actions implementation
-    addXp: (amount) => set((state) => {
-        const newXp = state.xp + amount;
-        // Simple level logic: 1000xp per level
-        const newLevel = Math.floor(newXp / 1000) + 1;
-        return { xp: newXp, level: newLevel };
-    }),
 
-    joinClub: (club) => set((state) => ({
-        joinedClubs: [...state.joinedClubs, club],
-        availableClubs: state.availableClubs.filter(c => c.id !== club.id)
-    })),
+    // Initial Load
+    fetchData: async () => {
+        const driverId = useDriverStore.getState().driver?.id;
+        if (!driverId) return;
 
-    leaveClub: (clubId) => set((state) => {
-        const club = state.joinedClubs.find(c => c.id === clubId);
-        if (!club) return state;
-        return {
-            joinedClubs: state.joinedClubs.filter(c => c.id !== clubId),
-            availableClubs: [...state.availableClubs, club]
-        };
-    }),
+        // Load Stats
+        const { stats } = await premiumsService.getDriverStats(driverId);
+        if (stats) set({
+            xp: stats.xp || 0,
+            level: stats.level || 1,
+            streakDays: stats.streak_days || 0,
+            gloryPoints: stats.glory_points || 0
+        });
+
+        // Load Predictions
+        const { predictions } = await premiumsService.getPredictions();
+        if (predictions) set({ predictions });
+
+        // Load Challenges
+        const { challenges } = await premiumsService.getChallenges(driverId);
+        if (challenges) set({ activeChallenges: challenges });
+
+        // Load Clubs
+        const { clubs: myClubs } = await premiumsService.getMyClubs(driverId);
+        if (myClubs) set({ joinedClubs: myClubs });
+
+        const { clubs: allClubs } = await premiumsService.getClubs();
+        if (allClubs) {
+            // Filter out joined clubs
+            const joinedIds = new Set(myClubs?.map(c => c.id) || []);
+            set({ availableClubs: allClubs.filter(c => !joinedIds.has(c.id)) });
+        }
+    },
+
+    addXp: async (amount) => {
+        const driverId = useDriverStore.getState().driver?.id;
+        if (!driverId) return;
+
+        // Optimistic update
+        set((state) => {
+            const newXp = state.xp + amount;
+            const newLevel = Math.floor(newXp / 1000) + 1;
+            return { xp: newXp, level: newLevel };
+        });
+
+        await premiumsService.addXp(driverId, amount);
+    },
+
+    joinClub: async (club) => {
+        const driverId = useDriverStore.getState().driver?.id;
+        if (!driverId) return;
+
+        await premiumsService.joinClub(driverId, club.id);
+
+        set((state) => ({
+            joinedClubs: [...state.joinedClubs, club],
+            availableClubs: state.availableClubs.filter(c => c.id !== club.id)
+        }));
+    },
+
+    leaveClub: async (clubId) => {
+        const driverId = useDriverStore.getState().driver?.id;
+        if (!driverId) return;
+
+        await premiumsService.leaveClub(driverId, clubId);
+
+        set((state) => {
+            const club = state.joinedClubs.find(c => c.id === clubId);
+            if (!club) return state;
+            return {
+                joinedClubs: state.joinedClubs.filter(c => c.id !== clubId),
+                availableClubs: [...state.availableClubs, club]
+            };
+        });
+    },
 
     toggleHomeMode: () => set((state) => ({
         homeMode: { ...state.homeMode, active: !state.homeMode.active }
@@ -201,16 +243,12 @@ export const useDriverPremiumsStore = create<DriverPremiumState>((set, get) => (
         }
     })),
 
-    refreshPredictions: () => set((state) => {
-        // Mock refresh: shuffle demand
-        const demands: ('low' | 'medium' | 'high' | 'surge')[] = ['low', 'medium', 'high', 'surge'];
-        const newPredictions = state.predictions.map(p => ({
-            ...p,
-            currentDemand: demands[Math.floor(Math.random() * demands.length)],
-            trend: (Math.random() > 0.5 ? 'up' : 'down') as 'up' | 'down',
-        }));
-        return { predictions: newPredictions, lastPredictionUpdate: new Date() };
-    }),
+    refreshPredictions: async () => {
+        const { predictions } = await premiumsService.getPredictions();
+        if (predictions) {
+            set({ predictions, lastPredictionUpdate: new Date() });
+        }
+    },
 
     addToSavings: (amount) => set((state) => ({
         savings: { ...state.savings, balance: state.savings.balance + amount }

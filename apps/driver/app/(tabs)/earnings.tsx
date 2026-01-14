@@ -74,11 +74,11 @@ export default function EarningsScreen() {
                 <Text style={styles.headerLabel}>Gains aujourd'hui</Text>
                 <Text style={styles.headerAmount}>{stats.todayEarnings.toLocaleString()} FCFA</Text>
                 <View style={styles.headerStats}>
-                    <View style={styles.headerStat}><Ionicons name={terms.tripIcon as any} size={20} color={COLORS.white} /><Text style={styles.headerStatText}>{stats.totalRides} {terms.trips}</Text></View>
-                    <View style={styles.headerStat}><Ionicons name="wallet" size={20} color={COLORS.white} /><Text style={styles.headerStatText}>Solde: {stats.todayEarnings.toLocaleString()} F</Text></View>
+                    <View style={styles.headerStat}><Text style={{ fontSize: 20 }}>🚕</Text><Text style={styles.headerStatText}>{stats.totalRides} {terms.trips}</Text></View>
+                    <View style={styles.headerStat}><Text style={{ fontSize: 20 }}>💳</Text><Text style={styles.headerStatText}>Solde: {stats.todayEarnings.toLocaleString()} F</Text></View>
                 </View>
                 <TouchableOpacity style={styles.withdrawBtn} onPress={() => router.push('/wallet')}>
-                    <Text style={styles.withdrawBtnText}>💸 Retrait instantané</Text>
+                    <Text style={styles.withdrawBtnText}>➕ Recharger mon compte</Text>
                 </TouchableOpacity>
             </LinearGradient>
 

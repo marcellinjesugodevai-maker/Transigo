@@ -47,32 +47,36 @@ interface HotZone {
     distance: number;
 }
 
-// Simulation des zones chaudes
-const MOCK_ZONES: HotZone[] = [
-    { id: 'z1', name: 'Aéroport FHB', demandLevel: 'surge', demandScore: 95, surgeMultiplier: 1.5, estimatedWaitTime: 1, predictedChange: 'stable', reason: '✈️ Arrivées de vols', distance: 8.5 },
-    { id: 'z2', name: 'Plateau', demandLevel: 'high', demandScore: 82, surgeMultiplier: 1.3, estimatedWaitTime: 2, predictedChange: 'increasing', reason: '🏢 Zone d\'affaires', distance: 3.2 },
-    { id: 'z3', name: 'Cocody', demandLevel: 'high', demandScore: 75, surgeMultiplier: 1.2, estimatedWaitTime: 2, predictedChange: 'stable', distance: 1.5 },
-    { id: 'z4', name: '2 Plateaux', demandLevel: 'high', demandScore: 70, surgeMultiplier: 1.2, estimatedWaitTime: 3, predictedChange: 'increasing', distance: 2.8 },
-    { id: 'z5', name: 'Riviera', demandLevel: 'medium', demandScore: 55, surgeMultiplier: 1.0, estimatedWaitTime: 5, predictedChange: 'stable', distance: 4.2 },
-    { id: 'z6', name: 'Marcory', demandLevel: 'medium', demandScore: 48, surgeMultiplier: 1.0, estimatedWaitTime: 6, predictedChange: 'decreasing', distance: 5.8 },
-    { id: 'z7', name: 'Yopougon', demandLevel: 'low', demandScore: 30, surgeMultiplier: 1.0, estimatedWaitTime: 10, predictedChange: 'stable', distance: 12.3 },
-];
+import { useDriverPremiumsStore, ZonePrediction } from '../src/stores/driverPremiumsStore';
+
+// Note: MOCK_ZONES removed in favor of Supabase data
 
 export default function HeatMapScreen() {
-    const [zones, setZones] = useState<HotZone[]>(MOCK_ZONES);
+    const { predictions, refreshPredictions } = useDriverPremiumsStore();
     const [refreshing, setRefreshing] = useState(false);
-    const [selectedZone, setSelectedZone] = useState<HotZone | null>(null);
+    const [selectedZone, setSelectedZone] = useState<any | null>(null); // Using loose type for mapped zone
 
-    const onRefresh = () => {
+    // Map store predictions to UI format
+    const zones = predictions.map(p => ({
+        id: p.id,
+        name: p.zone,
+        demandLevel: p.currentDemand,
+        demandScore: p.confidence,
+        surgeMultiplier: p.surgeMultiplier,
+        estimatedWaitTime: p.inMinutes || 5,
+        predictedChange: p.trend === 'up' ? 'increasing' : p.trend === 'down' ? 'decreasing' : 'stable',
+        reason: p.reason,
+        distance: p.distance || 0
+    }));
+
+    useEffect(() => {
+        refreshPredictions();
+    }, []);
+
+    const onRefresh = async () => {
         setRefreshing(true);
-        // Simuler mise à jour
-        setTimeout(() => {
-            setZones(MOCK_ZONES.map(z => ({
-                ...z,
-                demandScore: Math.min(100, z.demandScore + Math.floor(Math.random() * 10) - 5),
-            })));
-            setRefreshing(false);
-        }, 1500);
+        await refreshPredictions();
+        setRefreshing(false);
     };
 
     const getDemandColor = (level: string) => {
@@ -112,14 +116,14 @@ export default function HeatMapScreen() {
             {/* Header */}
             <LinearGradient colors={[COLORS.primary, '#E65100']} style={styles.header}>
                 <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-                    <Ionicons name="arrow-back" size={24} color={COLORS.white} />
+                    <Text style={{ fontSize: 24, color: COLORS.white }}>⬅️</Text>
                 </TouchableOpacity>
                 <View style={styles.headerContent}>
                     <Text style={styles.headerTitle}>📍 Zones Chaudes</Text>
                     <Text style={styles.headerSubtitle}>Mis à jour il y a 2 min</Text>
                 </View>
                 <TouchableOpacity style={styles.refreshBtn} onPress={onRefresh}>
-                    <Ionicons name="refresh" size={22} color={COLORS.white} />
+                    <Text style={{ fontSize: 22, color: COLORS.white }}>🔄</Text>
                 </TouchableOpacity>
             </LinearGradient>
 
@@ -145,7 +149,7 @@ export default function HeatMapScreen() {
                                 </Text>
                             </View>
                             <TouchableOpacity style={styles.goBtn}>
-                                <Ionicons name="navigate" size={22} color={COLORS.secondary} />
+                                <Text style={{ fontSize: 22 }}>🚀</Text>
                             </TouchableOpacity>
                         </LinearGradient>
                     </View>

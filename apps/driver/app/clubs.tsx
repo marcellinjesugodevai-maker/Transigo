@@ -70,7 +70,7 @@ export default function ClubsScreen() {
             {/* Header */}
             <LinearGradient colors={[COLORS.social, COLORS.socialDark]} style={styles.header}>
                 <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-                    <Ionicons name="arrow-back" size={24} color={COLORS.white} />
+                    <Text style={{ fontSize: 24, color: COLORS.white }}>⬅️</Text>
                 </TouchableOpacity>
                 <View style={styles.headerContent}>
                     <Text style={styles.headerTitle}>👥 Communauté</Text>
@@ -106,7 +106,7 @@ export default function ClubsScreen() {
                     <>
                         {/* Search */}
                         <View style={styles.searchContainer}>
-                            <Ionicons name="search" size={20} color={COLORS.gray600} />
+                            <Text style={{ fontSize: 20, color: COLORS.gray600 }}>🔍</Text>
                             <TextInput
                                 style={styles.searchInput}
                                 placeholder="Rechercher un club..."
@@ -161,7 +161,7 @@ export default function ClubsScreen() {
 
                         {/* Create club */}
                         <TouchableOpacity style={styles.createClubBtn}>
-                            <Ionicons name="add-circle-outline" size={24} color={COLORS.social} />
+                            <Text style={{ fontSize: 24, color: COLORS.social }}>➕</Text>
                             <Text style={styles.createClubText}>Créer un nouveau club</Text>
                         </TouchableOpacity>
                     </>
@@ -218,7 +218,7 @@ export default function ClubsScreen() {
                                 </View>
 
                                 <TouchableOpacity style={styles.shareBtn}>
-                                    <Ionicons name="share-social" size={20} color={COLORS.social} />
+                                    <Text style={{ fontSize: 20, color: COLORS.social }}>📤</Text>
                                     <Text style={styles.shareBtnText}>Partager le code</Text>
                                 </TouchableOpacity>
                             </LinearGradient>

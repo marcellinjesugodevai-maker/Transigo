@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, StatusBar } from 'react-native';
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -14,6 +14,7 @@ const COLORS = {
 };
 
 export default function HelpScreen() {
+    const router = useRouter();
     const faqItems = [
         { q: 'Comment recharger mon compte ?', a: 'Allez dans l\'onglet Wallet et cliquez sur le bouton de recharge.' },
         { q: 'Ma livraison est annulée, que faire ?', a: 'Si une livraison est annulée par le client, vous recevrez une notification et serez remis en file d\'attente.' },
@@ -27,7 +28,7 @@ export default function HelpScreen() {
 
             <LinearGradient colors={[COLORS.secondary, COLORS.secondaryDark]} style={styles.header}>
                 <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-                    <Ionicons name="arrow-back" size={24} color={COLORS.white} />
+                    <Text style={{ fontSize: 24, color: COLORS.white }}>⬅️</Text>
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Aide & Support</Text>
             </LinearGradient>
@@ -48,13 +49,21 @@ export default function HelpScreen() {
                         Nos équipes sont disponibles 7j/7 pour vous accompagner.
                     </Text>
 
+                    <TouchableOpacity
+                        style={[styles.contactBtn, { backgroundColor: COLORS.primary, marginBottom: 12 }]}
+                        onPress={() => router.push('/support-chat')}
+                    >
+                        <Text style={{ fontSize: 24, marginRight: 10 }}>💬</Text>
+                        <Text style={styles.contactBtnText}>Discussion en direct</Text>
+                    </TouchableOpacity>
+
                     <TouchableOpacity style={styles.contactBtn}>
-                        <Ionicons name="logo-whatsapp" size={24} color={COLORS.white} />
+                        <Text style={{ fontSize: 24, marginRight: 10 }}>📱</Text>
                         <Text style={styles.contactBtnText}>Contacter sur WhatsApp</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity style={[styles.contactBtn, { backgroundColor: COLORS.black, marginTop: 12 }]}>
-                        <Ionicons name="mail" size={24} color={COLORS.white} />
+                        <Text style={{ fontSize: 24, marginRight: 10 }}>✉️</Text>
                         <Text style={styles.contactBtnText}>Envoyer un email</Text>
                     </TouchableOpacity>
                 </View>

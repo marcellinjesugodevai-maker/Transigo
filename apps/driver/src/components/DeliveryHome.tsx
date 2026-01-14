@@ -3,9 +3,10 @@ import {
     View, Text, StyleSheet, Dimensions, TouchableOpacity,
     Switch, Animated, FlatList, Alert, Platform
 } from 'react-native';
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useDriverStore } from '../stores/driverStore';
+import { useDriverWalletStore } from '../stores';
 import * as Location from 'expo-location';
 import { LinearGradient } from 'expo-linear-gradient';
 import { rideService, driverService, supabase } from '../services/supabaseService';
@@ -32,7 +33,9 @@ const COLORS = {
 };
 
 export default function DeliveryHome() {
+    const router = useRouter();
     const { driver, isOnline, goOnline, goOffline, currentLocation, updateLocation, stats } = useDriverStore();
+    const { checkAvailability } = useDriverWalletStore();
     const [orders, setOrders] = useState<any[]>([]);
     const [activeOrder, setActiveOrder] = useState<any>(null);
     const [deliveryStep, setDeliveryStep] = useState<'inactive' | 'to_pickup' | 'at_restaurant' | 'to_dropoff'>('inactive');
@@ -151,7 +154,7 @@ export default function DeliveryHome() {
             }
         }, 'delivery');
 
-        return () => supabase.removeChannel(channel);
+        return () => { supabase.removeChannel(channel); };
     }, [isOnline]);
 
     // Bottom sheet animation
@@ -165,8 +168,27 @@ export default function DeliveryHome() {
     }, [isOnline, activeOrder]);
 
     const toggleOnline = () => {
-        if (isOnline) { goOffline(); setActiveOrder(null); setDeliveryStep('inactive'); setOnlineTime(0); }
-        else { goOnline(); }
+        if (isOnline) {
+            goOffline();
+            setActiveOrder(null);
+            setDeliveryStep('inactive');
+            setOnlineTime(0);
+        } else {
+            // Vérification Solde Wallet
+            const { canGoOnline, message } = checkAvailability();
+            if (!canGoOnline) {
+                Alert.alert(
+                    '⚠️ Solde insuffisant',
+                    message + '\n\nVeuillez recharger votre compte pour recevoir des livraisons.',
+                    [
+                        { text: 'Annuler', style: 'cancel' },
+                        { text: 'Recharger', onPress: () => router.push('/wallet') },
+                    ]
+                );
+                return;
+            }
+            goOnline();
+        }
     };
 
     const handleAcceptOrder = async (order: any) => {
@@ -201,7 +223,7 @@ export default function DeliveryHome() {
                     {/* Header */}
                     <View style={styles.orderHeader}>
                         <View style={styles.iconBox}>
-                            <Ionicons name="cube" size={22} color={COLORS.white} />
+                            <Text style={{ fontSize: 22 }}>📦</Text>
                         </View>
                         <View style={styles.orderInfo}>
                             <Text style={styles.orderTitle} numberOfLines={1}>{item.restaurant}</Text>
@@ -225,11 +247,11 @@ export default function DeliveryHome() {
                     {/* Stats Row */}
                     <View style={styles.statsRow}>
                         <View style={styles.statChip}>
-                            <Ionicons name="navigate" size={14} color={COLORS.primary} />
+                            <Text style={{ fontSize: 14 }}>🧭</Text>
                             <Text style={styles.statChipText}>{item.distance}</Text>
                         </View>
                         <View style={styles.statChip}>
-                            <Ionicons name="time" size={14} color={COLORS.warning} />
+                            <Text style={{ fontSize: 14 }}>⏱️</Text>
                             <Text style={styles.statChipText}>{item.duration}</Text>
                         </View>
                     </View>
@@ -237,7 +259,7 @@ export default function DeliveryHome() {
                     {/* Accept Button */}
                     <LinearGradient colors={[COLORS.primary, COLORS.primaryDark]} style={styles.acceptBtn}>
                         <Text style={styles.acceptBtnText}>ACCEPTER</Text>
-                        <Ionicons name="checkmark-circle" size={20} color={COLORS.white} />
+                        <Text style={{ fontSize: 20 }}>✅</Text>
                     </LinearGradient>
                 </LinearGradient>
             </TouchableOpacity>
@@ -259,7 +281,7 @@ export default function DeliveryHome() {
                     <View style={styles.statsGrid}>
                         <View style={styles.statBlock}>
                             <View style={[styles.statIconBox, { backgroundColor: 'rgba(0,200,83,0.1)' }]}>
-                                <Ionicons name="wallet" size={18} color={COLORS.primary} />
+                                <Text style={{ fontSize: 18 }}>💰</Text>
                             </View>
                             <Text style={styles.statAmount}>{(stats?.todayEarnings || 0).toLocaleString()}</Text>
                             <Text style={styles.statUnit}>FCFA</Text>
@@ -267,7 +289,7 @@ export default function DeliveryHome() {
                         <View style={styles.dividerVertical} />
                         <View style={styles.statBlock}>
                             <View style={[styles.statIconBox, { backgroundColor: 'rgba(255,140,0,0.1)' }]}>
-                                <Ionicons name="star" size={18} color={COLORS.orange} />
+                                <Text style={{ fontSize: 18 }}>⭐</Text>
                             </View>
                             <Text style={styles.statAmount}>{driver?.rating || 4.9}</Text>
                             <Text style={styles.statUnit}>NOTE</Text>
@@ -275,7 +297,7 @@ export default function DeliveryHome() {
                         <View style={styles.dividerVertical} />
                         <View style={styles.statBlock}>
                             <View style={[styles.statIconBox, { backgroundColor: 'rgba(0,200,83,0.1)' }]}>
-                                <Ionicons name="time" size={18} color={COLORS.primary} />
+                                <Text style={{ fontSize: 18 }}>⏱️</Text>
                             </View>
                             <Text style={styles.statAmount}>{formatTime(onlineTime)}</Text>
                             <Text style={styles.statUnit}>EN LIGNE</Text>
@@ -304,21 +326,27 @@ export default function DeliveryHome() {
                 <View style={styles.fabRow}>
                     <TouchableOpacity style={styles.fab} onPress={() => router.push('/wallet')}>
                         <LinearGradient colors={['#FFFFFF', '#F5F5F5']} style={styles.fabInner}>
-                            <Ionicons name="wallet" size={22} color={COLORS.primary} />
+                            <Text style={{ fontSize: 22 }}>💰</Text>
                         </LinearGradient>
                         <Text style={styles.fabLabel}>Wallet</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.fab} onPress={() => router.push('/analytics')}>
                         <LinearGradient colors={['#FFFFFF', '#F5F5F5']} style={styles.fabInner}>
-                            <Ionicons name="analytics" size={22} color={COLORS.orange} />
+                            <Text style={{ fontSize: 22 }}>📊</Text>
                         </LinearGradient>
                         <Text style={styles.fabLabel}>Stats</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.fab} onPress={() => router.push('/heat-map')}>
                         <LinearGradient colors={['#FFFFFF', '#F5F5F5']} style={styles.fabInner}>
-                            <Ionicons name="flame" size={22} color={COLORS.warning} />
+                            <Text style={{ fontSize: 22 }}>🔥</Text>
                         </LinearGradient>
                         <Text style={styles.fabLabel}>Zones</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.fab} onPress={() => router.push('/support-chat')}>
+                        <LinearGradient colors={['#FFFFFF', '#F5F5F5']} style={styles.fabInner}>
+                            <Text style={{ fontSize: 22 }}>💬</Text>
+                        </LinearGradient>
+                        <Text style={styles.fabLabel}>Support</Text>
                     </TouchableOpacity>
                 </View>
             )}
@@ -329,7 +357,7 @@ export default function DeliveryHome() {
                     <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
                         <TouchableOpacity onPress={toggleOnline} activeOpacity={0.9}>
                             <LinearGradient colors={[COLORS.primary, '#00A040']} style={styles.goOnlineBtn}>
-                                <Ionicons name="power" size={32} color={COLORS.white} />
+                                <Text style={{ fontSize: 32 }}>🚀</Text>
                                 <Text style={styles.goOnlineText}>DÉMARRER</Text>
                             </LinearGradient>
                         </TouchableOpacity>
@@ -351,7 +379,7 @@ export default function DeliveryHome() {
                                 </Text>
                             </View>
                             <TouchableOpacity onPress={() => setActiveOrder(null)}>
-                                <Ionicons name="close-circle" size={28} color={COLORS.gray} />
+                                <Text style={{ fontSize: 28 }}>❌</Text>
                             </TouchableOpacity>
                         </View>
 
@@ -365,7 +393,7 @@ export default function DeliveryHome() {
 
                         <View style={styles.activeActions}>
                             <TouchableOpacity style={styles.navBtn} onPress={() => router.push('/delivery-navigation')}>
-                                <Ionicons name="navigate" size={22} color={COLORS.white} />
+                                <Text style={{ fontSize: 22 }}>🧭</Text>
                                 <Text style={styles.navBtnText}>GPS</Text>
                             </TouchableOpacity>
                             <TouchableOpacity onPress={handleNextStep} style={{ flex: 2 }}>

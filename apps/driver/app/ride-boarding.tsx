@@ -79,7 +79,7 @@ export default function RideBoardingScreen() {
                             <Text style={styles.avatarText}>{passengerName.charAt(0)}</Text>
                         </View>
                         <View style={styles.badgeContainer}>
-                            <Ionicons name="star" size={12} color={COLORS.white} />
+                            <Text style={{ fontSize: 12 }}>⭐</Text>
                             <Text style={styles.badgeText}>4.8</Text>
                         </View>
                     </View>
@@ -88,11 +88,11 @@ export default function RideBoardingScreen() {
 
                     <View style={styles.actionsRow}>
                         <TouchableOpacity style={styles.actionBtn} onPress={() => router.push(`/driver-chat?name=${passengerName}`)}>
-                            <Ionicons name="chatbubble-outline" size={24} color={COLORS.primary} />
+                            <Text style={{ fontSize: 24 }}>💬</Text>
                             <Text style={styles.actionText}>Message</Text>
                         </TouchableOpacity>
                         <TouchableOpacity style={styles.actionBtn}>
-                            <Ionicons name="call-outline" size={24} color={COLORS.primary} />
+                            <Text style={{ fontSize: 24 }}>📞</Text>
                             <Text style={styles.actionText}>Appeler</Text>
                         </TouchableOpacity>
                     </View>
@@ -101,7 +101,7 @@ export default function RideBoardingScreen() {
                 {/* Status Animation */}
                 <View style={styles.statusContainer}>
                     <View style={styles.pulseDisk}>
-                        <Ionicons name="accessibility" size={40} color={COLORS.secondary} />
+                        <Text style={{ fontSize: 40 }}>🧘</Text>
                     </View>
                     <Text style={styles.statusText}>En attente du passager...</Text>
                     <Text style={styles.timerText}>02:30 min d'attente gratuite</Text>
@@ -117,7 +117,7 @@ export default function RideBoardingScreen() {
                             end={{ x: 1, y: 0 }}
                         >
                             <Text style={styles.startBtnText}>DÉMARRER LA COURSE</Text>
-                            <Ionicons name="arrow-forward" size={24} color={COLORS.white} />
+                            <Text style={{ fontSize: 24, color: COLORS.white }}>➡️</Text>
                         </LinearGradient>
                     </TouchableOpacity>
 

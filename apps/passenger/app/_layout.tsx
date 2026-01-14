@@ -9,7 +9,7 @@ import { View, Text } from 'react-native';
 
 import { Asset } from 'expo-asset';
 import * as Font from 'expo-font';
-import { Ionicons } from '@expo/vector-icons';
+// import { Ionicons } from '@expo/vector-icons';
 
 // Prevent splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync();
@@ -25,10 +25,7 @@ export default function RootLayout() {
     useEffect(() => {
         async function prepare() {
             try {
-                // Pre-load fonts - THIS IS CRITICAL for icons
-                await Font.loadAsync({
-                    ...Ionicons.font,
-                });
+                // Pre-load essential images (Ionicons font load removed)
 
                 // Pre-load essential images
                 await Asset.loadAsync([

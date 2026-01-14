@@ -6,5 +6,13 @@
     "**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
-  ]
+  ],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@transigo/shared": [
+        "../../packages/shared/src/index.ts"
+      ]
+    }
+  }
 }

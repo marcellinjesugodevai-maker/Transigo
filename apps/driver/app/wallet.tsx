@@ -156,11 +156,14 @@ export default function WalletScreen() {
                     styles.txIcon,
                     { backgroundColor: isPending ? '#FFF3E0' : isRejected ? '#FFEBEE' : isTopUp ? '#E8F5E9' : '#EDE7F6' }
                 ]}>
-                    <Ionicons
-                        name={isPending ? 'time' : isRejected ? 'close' : isTopUp ? 'arrow-down' : 'arrow-up'}
-                        size={20}
-                        color={isPending ? COLORS.warning : isRejected ? COLORS.error : isTopUp ? COLORS.secondary : COLORS.primary}
-                    />
+                    <View style={[
+                        styles.txIcon,
+                        { backgroundColor: isPending ? '#FFF3E0' : isRejected ? '#FFEBEE' : isTopUp ? '#E8F5E9' : '#EDE7F6' }
+                    ]}>
+                        <Text style={{ fontSize: 20 }}>
+                            {isPending ? '⏳' : isRejected ? '❌' : isTopUp ? '⬇️' : '⬆️'}
+                        </Text>
+                    </View>
                 </View>
                 <View style={styles.txInfo}>
                     <Text style={styles.txDescription}>
@@ -185,7 +188,7 @@ export default function WalletScreen() {
             {/* Header */}
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-                    <Ionicons name="arrow-back" size={24} color={COLORS.white} />
+                    <Text style={{ fontSize: 24, color: COLORS.white }}>⬅️</Text>
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Mon Portefeuille</Text>
                 <View style={{ width: 40 }} />
@@ -205,12 +208,12 @@ export default function WalletScreen() {
 
                     {isBlocked ? (
                         <View style={styles.blockedBadge}>
-                            <Ionicons name="warning" size={16} color={COLORS.white} />
+                            <Text style={{ fontSize: 16, color: COLORS.white, marginRight: 6 }}>⚠️</Text>
                             <Text style={styles.blockedText}>Compte bloqué - Solde insuffisant</Text>
                         </View>
                     ) : (
                         <View style={styles.activeBadge}>
-                            <Ionicons name="checkmark-circle" size={16} color={COLORS.white} />
+                            <Text style={{ fontSize: 16, color: COLORS.white, marginRight: 6 }}>✅</Text>
                             <Text style={styles.activeText}>Compte actif</Text>
                         </View>
                     )}
@@ -250,7 +253,7 @@ export default function WalletScreen() {
                 {/* Commission Info */}
                 <View style={styles.commissionCard}>
                     <View style={styles.commissionHeader}>
-                        <Ionicons name="information-circle" size={24} color={COLORS.primary} />
+                        <Text style={{ fontSize: 24, color: COLORS.primary }}>ℹ️</Text>
                         <Text style={styles.commissionTitle}>Comment ça marche ?</Text>
                     </View>
                     <Text style={styles.commissionText}>
@@ -270,7 +273,7 @@ export default function WalletScreen() {
                     <Text style={styles.sectionTitle}>Historique des transactions</Text>
                     {recentTransactions.length === 0 ? (
                         <View style={styles.emptyState}>
-                            <Ionicons name="wallet-outline" size={48} color={COLORS.gray300} />
+                            <Text style={{ fontSize: 48, color: COLORS.gray300 }}>📭</Text>
                             <Text style={styles.emptyText}>Aucune transaction</Text>
                         </View>
                     ) : (
@@ -295,7 +298,7 @@ export default function WalletScreen() {
                         <View style={styles.modalHeader}>
                             <Text style={styles.modalTitle}>Déclarer un Dépôt</Text>
                             <TouchableOpacity onPress={() => setShowDepositModal(false)}>
-                                <Ionicons name="close" size={24} color={COLORS.black} />
+                                <Text style={{ fontSize: 24, color: COLORS.black }}>❌</Text>
                             </TouchableOpacity>
                         </View>
 

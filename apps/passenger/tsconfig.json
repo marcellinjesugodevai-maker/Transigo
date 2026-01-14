@@ -30,6 +30,9 @@
             ],
             "@assets/*": [
                 "./assets/*"
+            ],
+            "@transigo/shared": [
+                "../../packages/shared/src/index.ts"
             ]
         }
     },

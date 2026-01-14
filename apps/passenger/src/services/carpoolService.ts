@@ -27,6 +27,22 @@ const calculatePricePerPerson = (basePrice: number, passengerCount: number): num
 
 export const carpoolService = {
     /**
+     * Récupérer une course covoiturage par ID
+     */
+    getRide: async (rideId: string): Promise<{ ride?: SharedRide; error?: any }> => {
+        try {
+            const { data, error } = await supabase
+                .from('shared_rides')
+                .select('*')
+                .eq('id', rideId)
+                .single();
+            return { ride: data, error };
+        } catch (error) {
+            return { error };
+        }
+    },
+
+    /**
      * Chercher les courses disponibles vers une destination
      */
     findAvailableRides: async (

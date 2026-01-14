@@ -64,7 +64,7 @@ export default function TranslatorScreen() {
             <StatusBar barStyle="light-content" />
             <LinearGradient colors={[COLORS.black, '#2C3E50']} style={styles.header}>
                 <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-                    <Ionicons name="arrow-back" size={24} color={COLORS.white} />
+                    <Text style={{ fontSize: 24, color: COLORS.white }}>⬅️</Text>
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Traducteur 🌍</Text>
             </LinearGradient>
@@ -76,7 +76,7 @@ export default function TranslatorScreen() {
                         <View style={styles.translationContainer}>
                             <Text style={styles.translationText}>{item.translation}</Text>
                             <TouchableOpacity onPress={() => speak(item.translation, item.lang === 'fr' ? 'en-US' : 'fr-FR')}>
-                                <Ionicons name="volume-high" size={20} color={COLORS.primary} />
+                                <Text style={{ fontSize: 20, color: COLORS.primary }}>🔊</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -86,7 +86,7 @@ export default function TranslatorScreen() {
             <View style={styles.controls}>
                 <TouchableOpacity style={styles.micButton} onPress={() => handleTranslate('fr')}>
                     <View style={styles.micIcon}>
-                        <Ionicons name="mic" size={28} color={COLORS.white} />
+                        <Text style={{ fontSize: 28, color: COLORS.white }}>🎤</Text>
                     </View>
                     <Text style={styles.micLabel}>Français</Text>
                 </TouchableOpacity>
@@ -95,7 +95,7 @@ export default function TranslatorScreen() {
 
                 <TouchableOpacity style={[styles.micButton]} onPress={() => handleTranslate('en')}>
                     <View style={[styles.micIcon, { backgroundColor: COLORS.secondary }]}>
-                        <Ionicons name="mic" size={28} color={COLORS.white} />
+                        <Text style={{ fontSize: 28, color: COLORS.white }}>🎤</Text>
                     </View>
                     <Text style={styles.micLabel}>English</Text>
                 </TouchableOpacity>

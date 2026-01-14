@@ -112,11 +112,11 @@ export default function DriverNotificationsScreen() {
 
     const getTypeIcon = (type: Notification['type']) => {
         switch (type) {
-            case 'bonus': return { icon: 'cash', color: COLORS.secondary, bg: '#E8F5E9' };
-            case 'review': return { icon: 'star', color: '#FFB800', bg: '#FFF8E1' };
-            case 'promo': return { icon: 'trophy', color: '#9C27B0', bg: '#F3E5F5' };
-            case 'info': return { icon: 'information-circle', color: '#2196F3', bg: '#E3F2FD' };
-            case 'warning': return { icon: 'warning', color: '#FF9800', bg: '#FFF3E0' };
+            case 'bonus': return { icon: '💰', color: COLORS.secondary, bg: '#E8F5E9' };
+            case 'review': return { icon: '⭐', color: '#FFB800', bg: '#FFF8E1' };
+            case 'promo': return { icon: '🏆', color: '#9C27B0', bg: '#F3E5F5' };
+            case 'info': return { icon: 'ℹ️', color: '#2196F3', bg: '#E3F2FD' };
+            case 'warning': return { icon: '⚠️', color: '#FF9800', bg: '#FFF3E0' };
         }
     };
 
@@ -127,7 +127,7 @@ export default function DriverNotificationsScreen() {
             {/* Header */}
             <LinearGradient colors={[COLORS.secondary, COLORS.secondaryDark]} style={styles.header}>
                 <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-                    <Ionicons name="arrow-back" size={24} color={COLORS.white} />
+                    <Text style={{ fontSize: 24, color: COLORS.white }}>⬅️</Text>
                 </TouchableOpacity>
                 <View style={styles.headerContent}>
                     <Text style={styles.headerTitle}>🔔 Notifications</Text>
@@ -159,7 +159,7 @@ export default function DriverNotificationsScreen() {
                             activeOpacity={0.8}
                         >
                             <View style={[styles.iconContainer, { backgroundColor: typeStyle.bg }]}>
-                                <Ionicons name={typeStyle.icon as any} size={22} color={typeStyle.color} />
+                                <Text style={{ fontSize: 22 }}>{typeStyle.icon}</Text>
                             </View>
                             <View style={styles.notificationContent}>
                                 <Text style={styles.notificationTitle}>{notification.title}</Text>

@@ -113,7 +113,7 @@ export default function SmartPredictionsScreen() {
             {/* Header */}
             <LinearGradient colors={[COLORS.ai, COLORS.aiDark]} style={styles.header}>
                 <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-                    <Ionicons name="arrow-back" size={24} color={COLORS.white} />
+                    <Text style={{ fontSize: 24, color: COLORS.white }}>⬅️</Text>
                 </TouchableOpacity>
                 <View style={styles.headerContent}>
                     <View style={styles.headerRow}>
@@ -194,7 +194,7 @@ export default function SmartPredictionsScreen() {
                             <Text style={styles.predictionConfidenceLabel}>Confiance IA: {prediction.confidence}%</Text>
                             <TouchableOpacity style={styles.goButton} onPress={() => router.push('/heat-map')}>
                                 <Text style={styles.goButtonText}>Y ALLER</Text>
-                                <Ionicons name="navigate" size={16} color={COLORS.white} />
+                                <Text style={{ fontSize: 16, color: COLORS.white }}>➡️</Text>
                             </TouchableOpacity>
                         </View>
 

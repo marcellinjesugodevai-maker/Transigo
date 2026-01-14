@@ -19,4 +19,10 @@ config.resolver.nodeModulesPaths = [
 config.resolver.sourceExts = [...config.resolver.sourceExts, 'cjs', 'mjs'];
 config.resolver.assetExts = [...config.resolver.assetExts, 'fcfa'];
 
+// 4. Force resolution of shared package
+config.resolver.extraNodeModules = {
+    ...config.resolver.extraNodeModules,
+    '@transigo/shared': path.resolve(workspaceRoot, 'packages/shared'),
+};
+
 module.exports = config;

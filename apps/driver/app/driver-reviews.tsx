@@ -44,12 +44,9 @@ export default function DriverReviewsScreen() {
         return (
             <View style={{ flexDirection: 'row', gap: 2 }}>
                 {[1, 2, 3, 4, 5].map((star) => (
-                    <Ionicons
-                        key={star}
-                        name={star <= rating ? 'star' : 'star-outline'}
-                        size={size}
-                        color="#FFB800"
-                    />
+                    <Text key={star} style={{ fontSize: size }}>
+                        {star <= rating ? '⭐' : '☆'}
+                    </Text>
                 ))}
             </View>
         );
@@ -62,7 +59,7 @@ export default function DriverReviewsScreen() {
             {/* Header */}
             <LinearGradient colors={['#FFB800', '#FF9800']} style={styles.header}>
                 <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-                    <Ionicons name="arrow-back" size={24} color={COLORS.white} />
+                    <Text style={{ fontSize: 24, color: COLORS.white }}>⬅️</Text>
                 </TouchableOpacity>
                 <View style={styles.headerContent}>
                     <Text style={styles.headerTitle}>⭐ Mes Avis</Text>
@@ -98,7 +95,7 @@ export default function DriverReviewsScreen() {
 
                 {/* Coming Soon Notice */}
                 <View style={styles.comingSoonCard}>
-                    <Ionicons name="time-outline" size={24} color={COLORS.primary} />
+                    <Text style={{ fontSize: 24 }}>⏱️</Text>
                     <View style={styles.comingSoonContent}>
                         <Text style={styles.comingSoonTitle}>Système d'avis à venir</Text>
                         <Text style={styles.comingSoonText}>

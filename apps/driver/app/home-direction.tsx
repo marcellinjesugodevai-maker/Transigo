@@ -270,7 +270,7 @@ export default function HomeDirectionScreen() {
 
             <LinearGradient colors={[COLORS.home, COLORS.homeDark]} style={styles.header}>
                 <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-                    <Ionicons name="arrow-back" size={24} color={COLORS.white} />
+                    <Text style={{ fontSize: 24, color: COLORS.white }}>⬅️</Text>
                 </TouchableOpacity>
                 <View style={styles.headerContent}>
                     <Text style={styles.headerTitle}>🏠 Mode Direction</Text>
@@ -297,14 +297,14 @@ export default function HomeDirectionScreen() {
                         style={[styles.modeBtn, destinationMode === 'home' && styles.modeBtnActive]}
                         onPress={() => setDestinationMode('home')}
                     >
-                        <Ionicons name="home" size={20} color={destinationMode === 'home' ? COLORS.white : COLORS.gray600} />
+                        <Text style={{ fontSize: 20 }}>🏠</Text>
                         <Text style={[styles.modeBtnText, destinationMode === 'home' && styles.modeBtnTextActive]}>Maison</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                         style={[styles.modeBtn, destinationMode === 'custom' && styles.modeBtnActive]}
                         onPress={() => setDestinationMode('custom')}
                     >
-                        <Ionicons name="map" size={20} color={destinationMode === 'custom' ? COLORS.white : COLORS.gray600} />
+                        <Text style={{ fontSize: 20 }}>🗺️</Text>
                         <Text style={[styles.modeBtnText, destinationMode === 'custom' && styles.modeBtnTextActive]}>Libre</Text>
                     </TouchableOpacity>
                 </View>
@@ -333,7 +333,7 @@ export default function HomeDirectionScreen() {
                     <View style={styles.addressCard}>
                         <Text style={styles.addressLabel}>📍 Destination personnalisée</Text>
                         <View style={styles.searchBar}>
-                            <Ionicons name="search" size={18} color={COLORS.gray600} />
+                            <Text style={{ fontSize: 18 }}>🔍</Text>
                             <TextInput
                                 style={[styles.addressInput, { flex: 1, marginLeft: 8 }]}
                                 value={searchQuery}
@@ -357,7 +357,7 @@ export default function HomeDirectionScreen() {
                 {activeSharedRide && (
                     <View style={styles.shareBadge}>
                         <LinearGradient colors={['#4CAF50', '#2E7D32']} style={styles.shareBadgeGradient}>
-                            <Ionicons name="radio" size={16} color={COLORS.white} />
+                            <Text style={{ fontSize: 16 }}>📡</Text>
                             <Text style={styles.shareBadgeText}>Trajet actif (+15% bonus interception)</Text>
                         </LinearGradient>
                     </View>

@@ -25,22 +25,6 @@ import { getTranslation } from '@/i18n/translations';
 
 const { width, height } = Dimensions.get('window');
 
-// Chauffeur simulé (pour la démo)
-const MOCK_DRIVER: DriverInfo = {
-    id: 'driver_001',
-    firstName: 'Kouassi',
-    lastName: 'Jean-Marc',
-    phone: '+225 07 00 00 00',
-    photo: '',
-    rating: 4.8,
-    totalRides: 234,
-    vehicleBrand: 'Toyota',
-    vehicleModel: 'Corolla',
-    vehicleColor: 'Grise',
-    vehiclePlate: 'AB-1234-CI',
-    currentLocation: null,
-};
-
 export default function FindingDriverScreen() {
     const params = useLocalSearchParams();
     const { isDark, colors } = useThemeStore();

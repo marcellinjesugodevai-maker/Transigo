@@ -21,6 +21,7 @@ import { COLORS, SPACING, RADIUS } from '@/constants';
 import { useRideStore, useThemeStore, useLanguageStore } from '@/stores';
 import { getTranslation } from '@/i18n/translations';
 import { locationService } from '@/services/locationService';
+import { rideService } from '@/services/supabaseService';
 
 const { width, height } = Dimensions.get('window');
 
@@ -76,56 +77,61 @@ export default function RideInProgressScreen() {
         }
     }, []);
 
-    // Mouvement du véhicule le long de la route
+    // Suivi réel du véhicule via Supabase Realtime
     useEffect(() => {
-        if (routeToDestination.length < 2) return;
+        if (!assignedDriver?.id) return;
 
-        // Réinitialiser l'index au début
-        currentRouteIndexRef.current = 0;
+        console.log('📡 [RideInProgress] Subscribing to driver location:', assignedDriver.id);
 
-        const interval = setInterval(() => {
-            const route = routeToDestination;
+        const subscription = rideService.subscribeToDriverLocation(
+            assignedDriver.id,
+            (location) => {
+                const { lat, lng } = location;
+                // Mettre à jour la position du véhicule
+                setVehiclePos({ latitude: lat, longitude: lng });
 
-            if (currentRouteIndexRef.current < route.length - 1) {
-                // Avancer de plusieurs points pour un mouvement visible
-                const stepsToMove = Math.min(4, route.length - 1 - currentRouteIndexRef.current);
-                currentRouteIndexRef.current += stepsToMove;
+                // Recalculer la distance restante à vol d'oiseau
+                // (On pourrait aussi utiliser OSRM chaque X secondes mais c'est lourd)
+                const distKm = rideService.haversineDistance(
+                    lat, lng,
+                    dropoffCoords.latitude, dropoffCoords.longitude
+                );
 
-                const nextPoint = route[currentRouteIndexRef.current];
+                // Convertir en mètres pour l'affichage
+                setRemainingDistance(distKm * 1000);
 
-                setVehiclePos({
-                    latitude: nextPoint.latitude,
-                    longitude: nextPoint.longitude
-                });
+                // Estimation temps restant (basé sur 3 min/km en ville ou vitesse moyenne 20km/h)
+                setRemainingTime(Math.ceil(distKm * 3));
 
-                // Calculer la progression
-                const progress = (currentRouteIndexRef.current / (route.length - 1)) * 100;
-                setProgressPercent(Math.round(progress));
+                // Mettre à jour le pourcentage de progression
+                if (totalRouteDistanceRef.current > 0) {
+                    const covered = totalRouteDistanceRef.current - (distKm * 1000);
+                    const progress = Math.min(100, Math.max(0, (covered / totalRouteDistanceRef.current) * 100));
+                    setProgressPercent(Math.round(progress));
 
-                // Calculer distance et temps restants (approximation)
-                const remainingPoints = route.length - 1 - currentRouteIndexRef.current;
-                const remainDist = (remainingPoints / route.length) * totalRouteDistanceRef.current;
-                setRemainingDistance(remainDist);
-                setRemainingTime(Math.max(1, Math.round(remainDist * 3))); // ~3 min/km
+                    // Animation fluide de la barre
+                    Animated.timing(progressAnim, {
+                        toValue: progress / 100,
+                        duration: 1000,
+                        useNativeDriver: false,
+                    }).start();
+                }
 
-                // Animation de la barre de progression
-                Animated.timing(progressAnim, {
-                    toValue: progress / 100,
-                    duration: 500,
-                    useNativeDriver: false,
-                }).start();
-
-                // Vérifier si arrivé
-                if (progress >= 95) {
+                // Détection arrivée (< 100m)
+                if (distKm < 0.1) {
                     handleArrival();
                 }
             }
-        }, 2000);
+        );
 
-        return () => clearInterval(interval);
-    }, [routeToDestination]);
+        return () => {
+            // Nettoyage subscription
+            if (subscription) subscription.unsubscribe();
+        };
+    }, [assignedDriver?.id]);
 
     const fetchRouteToDestination = async () => {
+        // Obtenir la route statique pour l'affichage sur la carte
         const route = await locationService.getRoute(
             pickupCoords.latitude,
             pickupCoords.longitude,
@@ -134,9 +140,10 @@ export default function RideInProgressScreen() {
         );
         if (route) {
             setRouteToDestination(route.coordinates);
+            // Initialiser les distances basées sur la route théorique au début
             setRemainingDistance(route.distance);
             setRemainingTime(Math.round(route.duration));
-            totalRouteDistanceRef.current = route.distance; // Sauvegarder la distance totale
+            totalRouteDistanceRef.current = route.distance;
         }
     };
 

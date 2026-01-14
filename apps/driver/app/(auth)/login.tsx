@@ -16,12 +16,13 @@ import {
     Image,
     Linking,
 } from 'react-native';
-import { router } from 'expo-router';
+import { WelcomeImage } from '../onboarding/welcomeAsset';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase, driverService } from '../../src/services/supabaseService';
 import { useDriverStore } from '../../src/stores/driverStore';
 import { pushNotificationService } from '../../src/services/pushNotificationService';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type AuthMode = 'login' | 'register';
 
@@ -120,6 +121,9 @@ export default function LoginScreen() {
             } catch (e) {
                 console.log('Error registering push token on login:', e);
             }
+
+            // Mettre à jour hasSeenOnboarding pour éviter le retour à l'intro
+            await AsyncStorage.setItem('hasSeenOnboarding', 'true');
 
             // REDIRECTION LOGIC
             if (driver.vehicle_plate === 'PENDING') {
@@ -224,7 +228,7 @@ export default function LoginScreen() {
                 {/* Logo */}
                 <View style={styles.logoContainer}>
                     <Image
-                        source={require('../../assets/logo.png')}
+                        source={{ uri: WelcomeImage }}
                         style={styles.logo}
                         resizeMode="contain"
                     />

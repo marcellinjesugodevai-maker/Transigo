@@ -53,7 +53,7 @@ export default function DriverDocumentsScreen() {
 
             <LinearGradient colors={[COLORS.secondary, COLORS.secondaryDark]} style={styles.header}>
                 <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-                    <Ionicons name="arrow-back" size={24} color={COLORS.white} />
+                    <Text style={{ fontSize: 24, color: COLORS.white }}>⬅️</Text>
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Documents</Text>
             </LinearGradient>
@@ -65,11 +65,9 @@ export default function DriverDocumentsScreen() {
             ) : (
                 <ScrollView contentContainerStyle={styles.content}>
                     <View style={styles.statusBanner}>
-                        <Ionicons
-                            name={driverData?.is_verified ? 'checkmark-circle' : 'time'}
-                            size={24}
-                            color={driverData?.is_verified ? COLORS.success : COLORS.warning}
-                        />
+                        <Text style={{ fontSize: 24, marginRight: 10 }}>
+                            {driverData?.is_verified ? '✅' : '⏳'}
+                        </Text>
                         <View style={styles.statusInfo}>
                             <Text style={styles.statusTitle}>
                                 {driverData?.is_verified ? 'Compte vérifié' : 'Vérification en cours'}
@@ -87,7 +85,7 @@ export default function DriverDocumentsScreen() {
                     {documents.map((doc) => (
                         <View key={doc.key} style={styles.docItem}>
                             <View style={styles.docInfo}>
-                                <Ionicons name="document-text" size={28} color={COLORS.secondary} />
+                                <Text style={{ fontSize: 28, color: COLORS.secondary, marginRight: 15 }}>📄</Text>
                                 <View style={styles.docText}>
                                     <Text style={styles.docLabel}>{doc.label}</Text>
                                     <View style={styles.docStatusRow}>
@@ -101,7 +99,7 @@ export default function DriverDocumentsScreen() {
                                 </View>
                             </View>
                             {doc.url ? (
-                                <Ionicons name="checkmark-circle" size={20} color={COLORS.success} />
+                                <Text style={{ fontSize: 20, color: COLORS.success }}>✅</Text>
                             ) : (
                                 <TouchableOpacity style={styles.uploadBtn}>
                                     <Text style={styles.uploadBtnText}>Charger</Text>

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { supabase } from '../../../lib/supabase';
+import { supabase, adminService } from '../../../lib/supabase';
 
 interface Driver {
     id: string;
@@ -299,6 +299,13 @@ export default function DriverDetailPage() {
                         ❌ Rejeter / Bloquer
                     </button>
                 )}
+                <button
+                    onClick={handleDelete}
+                    disabled={actionLoading}
+                    style={{ ...buttonStyle, background: '#ef4444', color: '#fff' }}
+                >
+                    🗑️ Supprimer définitivement
+                </button>
                 <button
                     onClick={openWhatsApp}
                     style={{ ...buttonStyle, background: '#25D366', color: '#fff' }}

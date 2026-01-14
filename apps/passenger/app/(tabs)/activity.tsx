@@ -42,83 +42,6 @@ interface Activity {
     status: ActivityStatus;
 }
 
-// Données enrichies
-const ACTIVITIES: Activity[] = [
-    {
-        id: '1',
-        type: 'vtc',
-        date: "Aujourd'hui • 14:30",
-        price: 2500,
-        from: 'Abidjan Mall, Cocody',
-        to: 'Aéroport FHB',
-        driver: { name: 'Moussa K.', avatar: '👨🏾', rating: 4.9 },
-        status: 'en_cours',
-    },
-    {
-        id: '2',
-        type: 'food',
-        date: "Aujourd'hui • 12:00",
-        price: 4500,
-        from: 'Poulet Braisé Chez Tantie',
-        to: 'Cocody Riviera 2',
-        restaurant: 'Poulet Braisé Chez Tantie',
-        items: 3,
-        driver: { name: 'Koné I.', avatar: '👨🏿', rating: 4.7 },
-        status: 'terminee',
-    },
-    {
-        id: '3',
-        type: 'delivery',
-        date: 'Hier • 16:45',
-        price: 1800,
-        from: 'Plateau, Cité Administrative',
-        to: 'Marcory Zone 4',
-        driver: { name: 'Jean P.', avatar: '👨🏽', rating: 4.8 },
-        status: 'terminee',
-    },
-    {
-        id: '4',
-        type: 'vtc',
-        date: 'Hier • 08:15',
-        price: 3000,
-        from: 'Yopougon Maroc',
-        to: 'Plateau',
-        driver: { name: 'Amadou S.', avatar: '👨🏾', rating: 4.6 },
-        status: 'terminee',
-    },
-    {
-        id: '5',
-        type: 'food',
-        date: 'Lun, 1 Jan • 20:30',
-        price: 6500,
-        from: 'Restaurant Le Plateau',
-        to: '2 Plateaux',
-        restaurant: 'Restaurant Le Plateau',
-        items: 5,
-        driver: { name: 'Bakary T.', avatar: '👨🏿', rating: 4.9 },
-        status: 'terminee',
-    },
-    {
-        id: '6',
-        type: 'vtc',
-        date: 'Dim, 31 Dec • 23:00',
-        price: 5000,
-        from: 'Sofitel Ivoire',
-        to: 'Cocody Angré',
-        driver: null,
-        status: 'annulee',
-    },
-    {
-        id: '7',
-        type: 'delivery',
-        date: 'Dim, 31 Dec • 10:00',
-        price: 2500,
-        from: 'Treichville',
-        to: 'Abobo',
-        driver: { name: 'Ibrahim D.', avatar: '👨🏾', rating: 4.5 },
-        status: 'terminee',
-    },
-];
 
 // Types d'activité
 const ACTIVITY_TYPES = [
@@ -136,27 +59,71 @@ const STATUS_FILTERS = [
     { id: 'annulee', label: 'Annulé', labelEn: 'Cancelled' },
 ];
 
+// Données chargées depuis Supabase
+import { useAuthStore } from '@/stores';
+import { rideService } from '@/services/supabaseService';
+import { useFocusEffect } from 'expo-router';
+import React, { useCallback } from 'react';
+
 export default function ActivityScreen() {
     const { language } = useLanguageStore();
     const { isDark, colors } = useThemeStore();
+    const { user } = useAuthStore();
     const t = (key: any) => getTranslation(key, language);
 
+    const [activities, setActivities] = useState<Activity[]>([]);
+    const [loading, setLoading] = useState(true);
     const [selectedType, setSelectedType] = useState('all');
     const [selectedStatus, setSelectedStatus] = useState('all');
 
+    // Charger l'historique
+    useFocusEffect(
+        useCallback(() => {
+            if (!user) return;
+
+            const fetchHistory = async () => {
+                setLoading(true);
+                const { rides, error } = await rideService.getRideHistory(user.id);
+
+                if (rides) {
+                    const mappedActivities: Activity[] = rides.map((r: any) => ({
+                        id: r.id,
+                        type: r.category === 'delivery' ? 'delivery' : 'vtc', // Adapter selon votre schéma
+                        date: new Date(r.created_at).toLocaleDateString(language === 'fr' ? 'fr-FR' : 'en-US', {
+                            day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
+                        }),
+                        price: r.price,
+                        from: r.pickup_address,
+                        to: r.dropoff_address,
+                        driver: r.drivers ? {
+                            name: `${r.drivers.first_name} ${r.drivers.last_name}`,
+                            avatar: '👨🏾', // Avatar par défaut si pas d'URL
+                            rating: r.drivers.rating || 5.0
+                        } : undefined,
+                        status: r.status === 'completed' ? 'terminee' : r.status === 'cancelled' ? 'annulee' : 'en_cours',
+                    }));
+                    setActivities(mappedActivities);
+                }
+                setLoading(false);
+            };
+
+            fetchHistory();
+        }, [user])
+    );
+
     // Filtrer les activités
-    const filteredActivities = ACTIVITIES.filter(a => {
+    const filteredActivities = activities.filter(a => {
         const typeMatch = selectedType === 'all' || a.type === selectedType;
         const statusMatch = selectedStatus === 'all' || a.status === selectedStatus;
         return typeMatch && statusMatch;
     });
 
     // Statistiques
-    const totalActivities = ACTIVITIES.length;
-    const totalSpent = ACTIVITIES.filter(a => a.status === 'terminee').reduce((sum, a) => sum + a.price, 0);
-    const vtcCount = ACTIVITIES.filter(a => a.type === 'vtc').length;
-    const foodCount = ACTIVITIES.filter(a => a.type === 'food').length;
-    const deliveryCount = ACTIVITIES.filter(a => a.type === 'delivery').length;
+    const totalActivities = activities.length;
+    const totalSpent = activities.filter(a => a.status === 'terminee').reduce((sum, a) => sum + a.price, 0);
+    const vtcCount = activities.filter(a => a.type === 'vtc').length;
+    const foodCount = activities.filter(a => a.type === 'food').length;
+    const deliveryCount = activities.filter(a => a.type === 'delivery').length;
 
     const getTypeIcon = (type: ActivityType) => {
         switch (type) {

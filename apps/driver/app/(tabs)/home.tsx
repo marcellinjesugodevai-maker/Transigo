@@ -16,15 +16,16 @@ import {
     StatusBar,
     PanResponder,
 } from 'react-native';
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import OSMMap from '../../src/components/OSMMap';
 import { useDriverPremiumsStore } from '../../src/stores/driverPremiumsStore';
 import { useDriverWalletStore, formatCFA } from '../../src/stores';
 import { useRideRequests } from '../../src/services/useRideRequests';
 import { useDriverStore } from '../../src/stores/driverStore';
 import DeliveryHome from '../../src/components/DeliveryHome';
+import * as Location from 'expo-location';
 
 const { width, height } = Dimensions.get('window');
 
@@ -41,10 +42,8 @@ const COLORS = {
     error: '#F44336',
 };
 
-// Demandes de course réelles via Supabase Realtime
-// Les données sont gérées par useRideRequests.ts
-
 export default function DriverHomeScreen() {
+    const router = useRouter();
     const { driver } = useDriverStore();
 
     // Debug Log
@@ -69,7 +68,12 @@ export default function DriverHomeScreen() {
         acceptRate: 94,
     });
 
-    const { level, xp } = useDriverPremiumsStore();
+    const { level, xp, fetchData } = useDriverPremiumsStore();
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
     const { balance, isBlocked, checkAvailability } = useDriverWalletStore();
 
     // Animations
@@ -175,7 +179,7 @@ export default function DriverHomeScreen() {
         if (locationIntervalRef.current) return; // Déjà en cours
 
         try {
-            const Location = await import('expo-location');
+            // const Location = await import('expo-location');
 
             // Demander permission
             const { status } = await Location.requestForegroundPermissionsAsync();
@@ -370,25 +374,25 @@ export default function DriverHomeScreen() {
                     {/* Stats rapides + Wallet */}
                     <View style={styles.statsRow}>
                         <TouchableOpacity style={styles.statCard} onPress={() => router.push('/wallet')}>
-                            <Text style={styles.statIcon}>💳</Text>
+                            <Text style={[styles.statIcon, { color: isOnline ? COLORS.white : COLORS.black }]}>💳</Text>
                             <Text style={[styles.statValue, { color: isBlocked ? COLORS.error : (isOnline ? COLORS.white : COLORS.black) }]}>
                                 {formatCFA(balance)}
                             </Text>
                         </TouchableOpacity>
                         <View style={styles.statCard}>
-                            <Text style={styles.statIcon}>🚗</Text>
+                            <Text style={[styles.statIcon, { color: isOnline ? COLORS.white : COLORS.black }]}>🚗</Text>
                             <Text style={[styles.statValue, { color: isOnline ? COLORS.white : COLORS.black }]}>
                                 {stats.todayRides}
                             </Text>
                         </View>
                         <View style={styles.statCard}>
-                            <Text style={styles.statIcon}>⏱️</Text>
+                            <Text style={[styles.statIcon, { color: isOnline ? COLORS.white : COLORS.black }]}>⏱️</Text>
                             <Text style={[styles.statValue, { color: isOnline ? COLORS.white : COLORS.black }]}>
                                 {stats.todayHours}h
                             </Text>
                         </View>
                         <View style={styles.statCard}>
-                            <Text style={styles.statIcon}>✅</Text>
+                            <Text style={[styles.statIcon, { color: isOnline ? COLORS.white : COLORS.black }]}>✅</Text>
                             <Text style={[styles.statValue, { color: isOnline ? COLORS.white : COLORS.black }]}>
                                 {stats.acceptRate}%
                             </Text>
@@ -408,8 +412,8 @@ export default function DriverHomeScreen() {
                 </View>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.shortcutsContent}>
                     <TouchableOpacity style={styles.shortcutBtn} onPress={() => router.push('/heat-map')}>
-                        <Text style={styles.shortcutIcon}>📍</Text>
-                        <Text style={styles.shortcutLabel}>Zones</Text>
+                        <Text style={styles.shortcutIcon}>🗺️</Text>
+                        <Text style={styles.shortcutLabel}>ZONES TEST</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.shortcutBtn} onPress={() => router.push('/leaderboard')}>
                         <Text style={styles.shortcutIcon}>🏆</Text>
@@ -457,7 +461,7 @@ export default function DriverHomeScreen() {
                             colors={isOnline ? [COLORS.secondary, COLORS.secondaryDark] : [COLORS.gray600, COLORS.offline]}
                             style={styles.toggleButton}
                         >
-                            <Ionicons name={isOnline ? 'power' : 'power-outline'} size={36} color={COLORS.white} />
+                            <Text style={{ fontSize: 36 }}>{isOnline ? '🚀' : '😴'}</Text>
                             <Text style={styles.toggleText}>
                                 {isOnline ? 'EN LIGNE' : 'HORS LIGNE'}
                             </Text>
@@ -487,7 +491,7 @@ export default function DriverHomeScreen() {
                             <View style={styles.passengerInfo}>
                                 <Text style={styles.passengerName}>{currentRequest.passengerName}</Text>
                                 <View style={styles.ratingRow}>
-                                    <Ionicons name="star" size={14} color="#FFB800" />
+                                    <Text style={{ fontSize: 14 }}>⭐</Text>
                                     <Text style={styles.ratingText}>{currentRequest.passengerRating}</Text>
                                 </View>
                                 {currentRequest.womenOnly && (
@@ -540,11 +544,11 @@ export default function DriverHomeScreen() {
                         {/* Stats */}
                         <View style={styles.tripStats}>
                             <View style={styles.tripStat}>
-                                <Ionicons name="navigate-outline" size={18} color={COLORS.gray600} />
+                                <Text style={{ fontSize: 18 }}>📍</Text>
                                 <Text style={styles.tripStatValue}>{currentRequest.distance} km</Text>
                             </View>
                             <View style={styles.tripStat}>
-                                <Ionicons name="time-outline" size={18} color={COLORS.gray600} />
+                                <Text style={{ fontSize: 18 }}>⏱️</Text>
                                 <Text style={styles.tripStatValue}>{currentRequest.duration} min</Text>
                             </View>
                         </View>
@@ -552,12 +556,12 @@ export default function DriverHomeScreen() {
                         {/* Buttons */}
                         <View style={styles.requestButtons}>
                             <TouchableOpacity style={styles.rejectBtn} onPress={rejectRequest}>
-                                <Ionicons name="close" size={28} color={COLORS.error} />
+                                <Text style={{ fontSize: 28, color: COLORS.error }}>❌</Text>
                             </TouchableOpacity>
                             <TouchableOpacity style={styles.acceptBtn} onPress={acceptRequest}>
                                 <LinearGradient colors={[COLORS.secondary, COLORS.secondaryDark]} style={styles.acceptGradient}>
                                     <Text style={styles.acceptText}>ACCEPTER</Text>
-                                    <Ionicons name="checkmark" size={24} color={COLORS.white} />
+                                    <Text style={{ fontSize: 24, color: COLORS.white }}>✅</Text>
                                 </LinearGradient>
                             </TouchableOpacity>
                         </View>

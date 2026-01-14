@@ -1,4 +1,5 @@
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image } from 'react-native';
+import { WelcomeImage } from './welcomeAsset';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -30,8 +31,8 @@ export default function OnboardingIntroScreen() {
                 </View>
 
                 <Image
-                    source={require('../../assets/logo.png')} // Or an illustration
-                    style={styles.illustration}
+                    source={{ uri: WelcomeImage }}
+                    style={{ width: 300, height: 200, alignSelf: 'center', marginBottom: 40 }}
                     resizeMode="contain"
                 />
 
@@ -64,7 +65,7 @@ export default function OnboardingIntroScreen() {
 
                     <View style={styles.step}>
                         <View style={[styles.stepIcon, { backgroundColor: COLORS.lightGreen }]}>
-                            <Ionicons name="eye" size={20} color={COLORS.primary} />
+                            <Text style={{ fontSize: 20 }}>👁️</Text>
                         </View>
                         <View style={styles.stepTextContainer}>
                             <Text style={styles.stepHeader}>Vérification</Text>
@@ -81,7 +82,7 @@ export default function OnboardingIntroScreen() {
                         style={styles.gradient}
                     >
                         <Text style={styles.btnText}>Compléter mon profil</Text>
-                        <Ionicons name="arrow-forward" size={24} color={COLORS.white} />
+                        <Text style={{ fontSize: 24, color: COLORS.white }}>➡️</Text>
                     </LinearGradient>
                 </TouchableOpacity>
                 {/* Bouton "Plus tard" supprimé - L'utilisateur doit compléter son profil */}

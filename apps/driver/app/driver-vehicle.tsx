@@ -27,18 +27,16 @@ export default function DriverVehicleScreen() {
             {/* Header */}
             <LinearGradient colors={[COLORS.secondary, COLORS.secondaryDark]} style={styles.header}>
                 <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-                    <Ionicons name="arrow-back" size={24} color={COLORS.white} />
+                    <Text style={{ fontSize: 24, color: COLORS.white }}>⬅️</Text>
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Mon véhicule</Text>
             </LinearGradient>
 
             <ScrollView contentContainerStyle={styles.content}>
                 <View style={styles.vehicleIconContainer}>
-                    <Ionicons
-                        name={isDelivery ? 'bicycle' : 'car'}
-                        size={80}
-                        color={COLORS.secondary}
-                    />
+                    <Text style={{ fontSize: 80 }}>
+                        {isDelivery ? '🚲' : '🚗'}
+                    </Text>
                 </View>
 
                 <View style={styles.infoSection}>

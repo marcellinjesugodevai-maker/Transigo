@@ -20,6 +20,9 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import * as Speech from 'expo-speech';
+import * as Location from 'expo-location';
+import { useDriverStore } from '../src/stores/driverStore';
+import { driverService } from '../src/services/supabaseService';
 import OSMMap from '../src/components/OSMMap';
 
 const { width, height } = Dimensions.get('window');
@@ -36,12 +39,12 @@ const COLORS = {
 };
 
 const NAVIGATION_STEPS = [
-    { id: '1', instruction: 'Démarrez vers le Nord', distance: '50 m', icon: 'navigate', lat: 5.3499, lng: -4.0166, locationName: 'Cocody Centre' },
-    { id: '2', instruction: 'Continuez tout droit sur 200m', distance: '200 m', icon: 'arrow-up', lat: 5.3520, lng: -4.0160, locationName: 'Rue des Jardins' },
-    { id: '3', instruction: 'Tournez à droite sur Blvd Latrille', distance: '500 m', icon: 'arrow-forward', lat: 5.3550, lng: -4.0150, locationName: 'Boulevard Latrille' },
-    { id: '4', instruction: 'Continuez sur Blvd Latrille', distance: '1.2 km', icon: 'arrow-up', lat: 5.3600, lng: -4.0140, locationName: 'Carrefour de la Vie' },
-    { id: '5', instruction: 'Tournez à gauche', distance: '100 m', icon: 'arrow-back', lat: 5.3650, lng: -4.0130, locationName: 'Abidjan Mall' },
-    { id: '6', instruction: 'Votre destination est sur la droite', distance: '0 m', icon: 'flag', lat: 5.3700, lng: -4.0120, locationName: 'Destination Finale' },
+    { id: '1', instruction: 'Démarrez vers le Nord', distance: '50 m', icon: '🧭', lat: 5.3499, lng: -4.0166, locationName: 'Cocody Centre' },
+    { id: '2', instruction: 'Continuez tout droit sur 200m', distance: '200 m', icon: '⬆️', lat: 5.3520, lng: -4.0160, locationName: 'Rue des Jardins' },
+    { id: '3', instruction: 'Tournez à droite sur Blvd Latrille', distance: '500 m', icon: '➡️', lat: 5.3550, lng: -4.0150, locationName: 'Boulevard Latrille' },
+    { id: '4', instruction: 'Continuez sur Blvd Latrille', distance: '1.2 km', icon: '⬆️', lat: 5.3600, lng: -4.0140, locationName: 'Carrefour de la Vie' },
+    { id: '5', instruction: 'Tournez à gauche', distance: '100 m', icon: '⬅️', lat: 5.3650, lng: -4.0130, locationName: 'Abidjan Mall' },
+    { id: '6', instruction: 'Votre destination est sur la droite', distance: '0 m', icon: '🏁', lat: 5.3700, lng: -4.0120, locationName: 'Destination Finale' },
 ];
 
 export default function DriverNavigationScreen() {
@@ -54,77 +57,68 @@ export default function DriverNavigationScreen() {
     const [eta, setEta] = useState(8);
     const [distance, setDistance] = useState(2.5);
 
-    // Position actuelle simulée du chauffeur
     const [driverLocation, setDriverLocation] = useState({ lat: 5.3499, lng: -4.0166 });
+    const locationSubscription = useRef<any>(null);
 
-    const pulseAnim = useRef(new Animated.Value(1)).current;
-
-    // Reset state whenever navigation type changes (pickup vs dropoff)
+    // Initialisation du tracking réel
     useEffect(() => {
-        // Reset navigation state
-        setCurrentStepIndex(0);
-        setEta(isPickup ? 8 : 25);
-        setDistance(isPickup ? 2.5 : 12.3);
-        setDriverLocation({ lat: 5.3499, lng: -4.0166 });
+        let subscription: any;
+
+        const startTracking = async () => {
+            // Demander la permission
+            const { status } = await Location.requestForegroundPermissionsAsync();
+            if (status !== 'granted') {
+                Alert.alert('Permission refusée', 'La géolocalisation est requise pour naviguer.');
+                return;
+            }
+
+            // Démarrer le suivi GPS réel
+            subscription = await Location.watchPositionAsync(
+                {
+                    accuracy: Location.Accuracy.High,
+                    timeInterval: 3000, // Mise à jour toutes les 3s
+                    distanceInterval: 10, // ou tous les 10m
+                },
+                async (location) => {
+                    const { latitude, longitude } = location.coords;
+
+                    // Mise à jour locale
+                    setDriverLocation({ lat: latitude, lng: longitude });
+
+                    // Mise à jour Supabase (pour le passager)
+                    // On suppose qu'on a l'ID du chauffeur dans le store ou context
+                    // Ici on utilise un mock ID ou celui du store si disponible
+                    try {
+                        const driverId = (await import('../src/stores/driverStore')).useDriverStore.getState().driver?.id;
+                        if (driverId) {
+                            await (await import('../src/services/supabaseService')).driverService.updateLocation(driverId, latitude, longitude);
+                        }
+                    } catch (err) {
+                        console.error("Erreur update location:", err);
+                    }
+                }
+            );
+            locationSubscription.current = subscription;
+        };
+
+        startTracking();
 
         // Annoncer le début du trajet
         const startMessage = isPickup
             ? "Navigation vers le passager démarrée."
             : "Course démarrée. Navigation vers la destination.";
         speakInstruction(startMessage);
+
+        return () => {
+            if (locationSubscription.current) {
+                locationSubscription.current.remove();
+            }
+        };
     }, [isPickup]);
 
-    // Simulation de navigation
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setCurrentStepIndex(prev => {
-                const nextIndex = prev + 1;
-
-                // Si on a encore des étapes
-                if (nextIndex < NAVIGATION_STEPS.length) {
-                    const step = NAVIGATION_STEPS[nextIndex];
-
-                    // Mettre à jour la position
-                    setDriverLocation({ lat: step.lat, lng: step.lng });
-
-                    // Annoncer l'instruction vocale
-                    const isDropoff = !isPickup;
-
-                    // Si c'est le trajet course (dropoff), on ajoute l'info de localisation pour le passager
-                    if (isDropoff && step.locationName && (nextIndex % 2 !== 0)) { // Une fois sur deux pour ne pas saturer
-                        setTimeout(() => {
-                            speakInstruction(`Position actuelle : ${step.locationName}. Tout se passe bien.`);
-                        }, 2000); // Petite pause après l'instruction de guidage
-                    }
-
-                    speakInstruction(step.instruction);
-
-                    // Mettre à jour ETA et Distance
-                    setEta(e => Math.max(1, e - 0.5));
-                    setDistance(d => Math.max(0.1, d - 0.2));
-
-                    return nextIndex;
-                } else {
-                    // Fin du trajet atteinte
-                    clearInterval(interval);
-
-                    if (isPickup) {
-                        speakInstruction("Vous êtes arrivé au point de prise en charge.");
-                    } else {
-                        // Message de fin de course chaleureux (Branding TransiGo)
-                        speakInstruction("Vous êtes arrivé à destination. Merci d'avoir voyagé avec TransiGo. Nous espérons vous revoir très bientôt. Passez une excellente journée !");
-                    }
-
-                    return prev;
-                }
-            });
-        }, 5000); // Avance chaque 5 secondes
-
-        return () => clearInterval(interval);
-    }, [isPickup]); // Dépendance ajoutée pour redémarrer la simu si le type change
-
     const speakInstruction = (text: string) => {
-        Speech.speak(text, { language: 'fr-FR', rate: 0.9, pitch: 1.0 });
+        // Optionnel : ne parler que si nécessaire ou via Google Maps
+        // Speech.speak(text, { language: 'fr-FR', rate: 0.9, pitch: 1.0 });
     };
 
     const openExternalMap = () => {
@@ -189,7 +183,7 @@ export default function DriverNavigationScreen() {
                 {/* Header overlay */}
                 <View style={styles.headerOverlay}>
                     <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-                        <Ionicons name="arrow-back" size={24} color={COLORS.black} />
+                        <Text style={{ fontSize: 24, color: COLORS.black }}>⬅️</Text>
                     </TouchableOpacity>
                     <View style={styles.headerInfo}>
                         <Text style={styles.headerTitle}>
@@ -197,7 +191,7 @@ export default function DriverNavigationScreen() {
                         </Text>
                     </View>
                     <TouchableOpacity style={styles.menuBtn} onPress={() => speakInstruction(currentStep.instruction)}>
-                        <Ionicons name="volume-high" size={22} color={COLORS.black} />
+                        <Text style={{ fontSize: 22, color: COLORS.black }}>🔊</Text>
                     </TouchableOpacity>
                 </View>
             </View>
@@ -207,7 +201,7 @@ export default function DriverNavigationScreen() {
                 {/* Current instruction */}
                 <LinearGradient colors={[COLORS.secondary, COLORS.secondaryDark]} style={styles.currentInstruction}>
                     <View style={styles.instructionIcon}>
-                        <Ionicons name={currentStep.icon as any} size={36} color={COLORS.white} />
+                        <Text style={{ fontSize: 36, color: COLORS.white }}>{currentStep.icon}</Text>
                     </View>
                     <View style={styles.instructionContent}>
                         <Text style={styles.instructionDistance}>{currentStep.distance}</Text>
@@ -219,7 +213,7 @@ export default function DriverNavigationScreen() {
                 {nextStep && (
                     <View style={styles.nextInstruction}>
                         <View style={styles.nextIcon}>
-                            <Ionicons name={nextStep.icon as any} size={20} color={COLORS.gray600} />
+                            <Text style={{ fontSize: 16 }}>{nextStep.icon}</Text>
                         </View>
                         <Text style={styles.nextText}>Ensuite: {nextStep.instruction}</Text>
                         <Text style={styles.nextDistance}>{nextStep.distance}</Text>
@@ -249,33 +243,33 @@ export default function DriverNavigationScreen() {
                 <View style={styles.actionsRow}>
                     <TouchableOpacity style={styles.actionBtn} onPress={() => router.push(`/driver-chat?name=${passengerName}`)}>
                         <View style={[styles.actionIcon, { backgroundColor: '#E3F2FD' }]}>
-                            <Ionicons name="chatbubble" size={22} color="#2196F3" />
+                            <Text style={{ fontSize: 22 }}>💬</Text>
                         </View>
                         <Text style={styles.actionLabel}>Chat</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.actionBtn} onPress={() => Alert.alert('Appel', 'Numérotation en cours...')}>
                         <View style={[styles.actionIcon, { backgroundColor: '#E8F5E9' }]}>
-                            <Ionicons name="call" size={22} color={COLORS.secondary} />
+                            <Text style={{ fontSize: 22 }}>📞</Text>
                         </View>
                         <Text style={styles.actionLabel}>Appeler</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.actionBtn} onPress={openExternalMap}>
                         <View style={[styles.actionIcon, { backgroundColor: '#FFF3E0' }]}>
-                            <Ionicons name="navigate" size={22} color={COLORS.primary} />
+                            <Text style={{ fontSize: 22 }}>🗺️</Text>
                         </View>
                         <Text style={styles.actionLabel}>Google Maps</Text>
                     </TouchableOpacity>
                     {isPickup ? (
                         <TouchableOpacity style={styles.actionBtn} onPress={() => router.replace('/ride-boarding')}>
                             <View style={[styles.actionIcon, { backgroundColor: '#E8F5E9' }]}>
-                                <Ionicons name="accessibility" size={22} color={COLORS.secondary} />
+                                <Text style={{ fontSize: 22 }}>🚶</Text>
                             </View>
                             <Text style={styles.actionLabel}>Arrivé (Boarding)</Text>
                         </TouchableOpacity>
                     ) : (
                         <TouchableOpacity style={styles.actionBtn} onPress={() => router.replace('/ride-payment')}>
                             <View style={[styles.actionIcon, { backgroundColor: '#E8F5E9' }]}>
-                                <Ionicons name="flag" size={22} color={COLORS.secondary} />
+                                <Text style={{ fontSize: 22 }}>🏁</Text>
                             </View>
                             <Text style={styles.actionLabel}>Terminer</Text>
                         </TouchableOpacity>

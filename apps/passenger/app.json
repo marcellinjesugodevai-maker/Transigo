@@ -39,6 +39,9 @@
           "data": [
             {
               "scheme": "geo"
+            },
+            {
+              "scheme": "google.navigation"
             }
           ],
           "category": [
@@ -55,12 +58,26 @@
               "host": "maps.google.com"
             },
             {
+              "scheme": "http",
+              "host": "maps.google.com"
+            },
+            {
               "scheme": "https",
               "host": "www.google.com",
               "pathPrefix": "/maps"
             },
             {
+              "scheme": "http",
+              "host": "www.google.com",
+              "pathPrefix": "/maps"
+            },
+            {
               "scheme": "https",
+              "host": "goo.gl",
+              "pathPrefix": "/maps"
+            },
+            {
+              "scheme": "http",
               "host": "goo.gl",
               "pathPrefix": "/maps"
             }

@@ -16,7 +16,7 @@ import {
     Linking,
     StatusBar,
 } from 'react-native';
-import { router, useLocalSearchParams } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -48,6 +48,7 @@ const QUICK_MESSAGES = [
 ];
 
 export default function DriverChatScreen() {
+    const router = useRouter();
     const params = useLocalSearchParams();
     const passengerName = params.name as string || 'Passager';
     const passengerPhone = params.phone as string || '+225 07 00 00 00';
@@ -114,7 +115,7 @@ export default function DriverChatScreen() {
             {/* Header */}
             <LinearGradient colors={[COLORS.secondary, COLORS.secondaryDark]} style={styles.header}>
                 <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-                    <Ionicons name="arrow-back" size={24} color={COLORS.white} />
+                    <Text style={{ fontSize: 24, color: COLORS.white }}>⬅️</Text>
                 </TouchableOpacity>
                 <View style={styles.passengerInfo}>
                     <View style={styles.passengerAvatar}>
@@ -126,7 +127,7 @@ export default function DriverChatScreen() {
                     </View>
                 </View>
                 <TouchableOpacity style={styles.callBtn} onPress={callPassenger}>
-                    <Ionicons name="call" size={22} color={COLORS.white} />
+                    <Text style={{ fontSize: 22, color: COLORS.white }}>📞</Text>
                 </TouchableOpacity>
             </LinearGradient>
 
@@ -179,7 +180,7 @@ export default function DriverChatScreen() {
                         colors={inputText.trim() ? [COLORS.secondary, COLORS.secondaryDark] : [COLORS.gray100, COLORS.gray100]}
                         style={styles.sendGradient}
                     >
-                        <Ionicons name="send" size={20} color={inputText.trim() ? COLORS.white : COLORS.gray600} />
+                        <Text style={{ fontSize: 20, color: inputText.trim() ? COLORS.white : COLORS.gray600 }}>📤</Text>
                     </LinearGradient>
                 </TouchableOpacity>
             </View>

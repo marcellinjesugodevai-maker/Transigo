@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { WelcomeImage } from '../../app/onboarding/welcomeAsset';
 import { View, Text, StyleSheet, Animated, Dimensions, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -39,7 +39,7 @@ export default function SplashScreen({ onFinish }: { onFinish: () => void }) {
                 {/* Logo Placeholder - replace with Image if available */}
                 <View style={styles.logoContainer}>
                     <Image
-                        source={require('../../assets/logo.png')}
+                        source={{ uri: WelcomeImage }}
                         style={styles.logoImage}
                         resizeMode="contain"
                     />

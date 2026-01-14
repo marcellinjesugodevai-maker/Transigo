@@ -50,79 +50,7 @@ interface Ride {
     tip: number;
 }
 
-// Données mock pour livraisons
-const RIDES: Ride[] = [
-    {
-        id: '1',
-        passengerName: 'Restaurant Le Petit Paris',
-        passengerRating: 4.8,
-        pickup: 'Cocody Riviera 2',
-        dropoff: 'Plateau Centre',
-        date: "Aujourd'hui",
-        time: '14:30',
-        price: 3500,
-        distance: 8.5,
-        duration: 25,
-        status: 'completed',
-        tip: 500,
-    },
-    {
-        id: '2',
-        passengerName: 'Aminata Diallo',
-        passengerRating: 4.9,
-        pickup: 'Marcory Zone 4',
-        dropoff: 'Aéroport FHB',
-        date: "Aujourd'hui",
-        time: '12:15',
-        price: 5500,
-        distance: 12.3,
-        duration: 35,
-        status: 'completed',
-        tip: 0,
-    },
-    {
-        id: '3',
-        passengerName: 'Jean-Baptiste Kouassi',
-        passengerRating: 4.5,
-        pickup: 'Yopougon Maroc',
-        dropoff: 'Treichville',
-        date: "Aujourd'hui",
-        time: '10:00',
-        price: 2800,
-        distance: 6.2,
-        duration: 20,
-        status: 'cancelled',
-        tip: 0,
-    },
-    {
-        id: '4',
-        passengerName: 'Fatou Bamba',
-        passengerRating: 5.0,
-        pickup: '2 Plateaux',
-        dropoff: 'Cocody Angré',
-        date: 'Hier',
-        time: '18:45',
-        price: 2000,
-        distance: 4.5,
-        duration: 15,
-        status: 'completed',
-        tip: 300,
-    },
-    {
-        id: '5',
-        passengerName: 'Ibrahim Touré',
-        passengerRating: 4.7,
-        pickup: 'Plateau',
-        dropoff: 'Port-Bouët',
-        date: 'Hier',
-        time: '08:30',
-        price: 4500,
-        distance: 15.0,
-        duration: 40,
-        status: 'completed',
-        tip: 500,
-    },
-];
+
 
 const FILTERS = [
     { id: 'all', label: 'Toutes', icon: '📋' },
@@ -188,7 +116,7 @@ export default function ActivityScreen() {
                         <View style={styles.passengerInfo}>
                             <Text style={styles.passengerName}>{passengerName}</Text>
                             <View style={styles.ratingRow}>
-                                <Ionicons name="star" size={12} color="#FFB800" />
+                                <Text style={{ fontSize: 12 }}>⭐</Text>
                                 <Text style={styles.ratingText}>4.8</Text>
                             </View>
                         </View>
@@ -220,15 +148,15 @@ export default function ActivityScreen() {
                 <View style={styles.rideFooter}>
                     <View style={styles.rideStats}>
                         <View style={styles.rideStat}>
-                            <Ionicons name="calendar-outline" size={14} color={COLORS.gray600} />
+                            <Text style={{ fontSize: 14 }}>📅</Text>
                             <Text style={styles.rideStatText}>{dateStr}, {timeStr}</Text>
                         </View>
                         <View style={styles.rideStat}>
-                            <Ionicons name="navigate-outline" size={14} color={COLORS.gray600} />
+                            <Text style={{ fontSize: 14 }}>📍</Text>
                             <Text style={styles.rideStatText}>{item.distance_km || 0} km</Text>
                         </View>
                         <View style={styles.rideStat}>
-                            <Ionicons name="time-outline" size={14} color={COLORS.gray600} />
+                            <Text style={{ fontSize: 14 }}>⏱️</Text>
                             <Text style={styles.rideStatText}>{item.duration_min || 0} min</Text>
                         </View>
                     </View>

@@ -121,7 +121,7 @@ export default function DriverObjectivesScreen() {
             {/* Header */}
             <LinearGradient colors={[COLORS.primary, '#E65100']} style={styles.header}>
                 <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-                    <Ionicons name="arrow-back" size={24} color={COLORS.white} />
+                    <Text style={{ fontSize: 24, color: COLORS.white }}>⬅️</Text>
                 </TouchableOpacity>
                 <View style={styles.headerContent}>
                     <Text style={styles.headerTitle}>🎯 Objectifs du Jour</Text>

@@ -38,7 +38,7 @@ export default function ProfileScreen() {
                 </View>
                 <Text style={styles.name}>{driver.firstName} {driver.lastName}</Text>
                 <View style={styles.ratingRow}>
-                    <Ionicons name="star" size={18} color="#FFB800" />
+                    <Text style={{ fontSize: 16 }}>⭐</Text>
                     <Text style={styles.rating}>{driver.rating || 5.0}</Text>
                     <Text style={styles.rides}>• {driver.totalRides || 0} {terms.trips}</Text>
                 </View>
@@ -49,11 +49,9 @@ export default function ProfileScreen() {
 
             {/* Vehicle Info */}
             <TouchableOpacity style={styles.vehicleCard} onPress={() => router.push('/driver-vehicle')}>
-                <Ionicons
-                    name={driver.profileType === 'delivery' ? 'bicycle' : 'car'}
-                    size={32}
-                    color={COLORS.secondary}
-                />
+                <Text style={{ fontSize: 32 }}>
+                    {driver.profileType === 'delivery' ? '🚲' : '🚗'}
+                </Text>
                 <View style={styles.vehicleInfo}>
                     <Text style={styles.vehicleName}>
                         {vehicle ? `${vehicle.brand} ${vehicle.model}` : 'Véhicule non défini'}
@@ -62,7 +60,7 @@ export default function ProfileScreen() {
                         {vehicle?.plate || 'Plaque d\'immatriculation'}
                     </Text>
                 </View>
-                <Ionicons name="chevron-forward" size={22} color={COLORS.gray600} />
+                <Text style={{ fontSize: 22, color: COLORS.gray600 }}>›</Text>
             </TouchableOpacity>
 
             {/* Menu */}
@@ -73,16 +71,23 @@ export default function ProfileScreen() {
                         style={styles.menuItem}
                         onPress={() => item.route && router.push(item.route as any)}
                     >
-                        <Ionicons name={item.icon as any} size={22} color={COLORS.gray600} />
+                        {/* MAPPING DES ICONES VERS EMOJIS */}
+                        <Text style={{ fontSize: 22 }}>
+                            {item.icon === 'car-outline' ? '🚗' :
+                                item.icon === 'document-text-outline' ? '📄' :
+                                    item.icon === 'wallet-outline' ? '💳' :
+                                        item.icon === 'notifications-outline' ? '🔔' :
+                                            item.icon === 'help-circle-outline' ? '❓' : '🔹'}
+                        </Text>
                         <Text style={styles.menuLabel}>{item.label}</Text>
-                        <Ionicons name="chevron-forward" size={20} color={COLORS.gray600} />
+                        <Text style={{ fontSize: 20, color: COLORS.gray600 }}>›</Text>
                     </TouchableOpacity>
                 ))}
             </View>
 
             {/* Logout */}
             <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
-                <Ionicons name="log-out-outline" size={22} color={COLORS.error} />
+                <Text style={{ fontSize: 22 }}>🚪</Text>
                 <Text style={styles.logoutText}>Déconnexion</Text>
             </TouchableOpacity>
 

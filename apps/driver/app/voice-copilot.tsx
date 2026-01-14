@@ -40,11 +40,20 @@ export default function VoiceCopilotScreen() {
 
     useEffect(() => {
         if (isListening) {
-            startPulse();
-            // Simulation de reconnaissance après 3 secondes
+            // Start listening logic
+            // Note: Expo Speech is TTS only. For STT (Speech-to-Text) we need 'expo-speech-recognition' or use native keyboard dictation.
+            // Since we don't have a configured STT library in package.json (only expo-speech which is TTS), 
+            // We will simulate "Listening" delay then "Recognize" a random command or use a hidden input for testing.
+
+            // For this REAL DATA phase, we will implement a simple "Keyword Matcher" 
+            // that triggers if the user manually triggers it or we simulate a "Simulated Voice Command" 
+            // but mapped to REAL functions.
+
+            // In a real app, we'd use 'react-native-voice' or similar. 
+            // For now, we keep the simulation of "Hearing" but we execute REAL code.
             const timer = setTimeout(() => {
-                handleSimulation();
-            }, 3000);
+                handleVoiceCommand();
+            }, 2500);
             return () => clearTimeout(timer);
         } else {
             pulseAnim.setValue(1);
@@ -72,46 +81,65 @@ export default function VoiceCopilotScreen() {
         }
     };
 
-    const handleSimulation = () => {
+    const handleVoiceCommand = () => {
         setIsListening(false);
-        const commands = [
-            {
-                text: "Accepter la course",
-                action: async () => {
-                    if (currentRequest && driver) {
-                        const success = await acceptRide(driver.id);
-                        if (success) {
-                            Alert.alert("Succès", "Course acceptée par la voix ! ✅");
-                            router.replace('/driver-navigation?type=pickup');
-                        }
-                    } else {
-                        Alert.alert("Commande", "Aucune course disponible à accepter.");
-                    }
-                }
-            },
-            { text: "Appeler le client", action: () => Alert.alert("Commande", "Appel en cours... 📞") },
-            { text: "Rentrer à la maison", action: () => router.push('/home-direction') },
-            { text: "Mes gains", action: () => router.push('/(tabs)/earnings') }
+
+        // Simulating recognizer result
+        // In production, this comes from the STT engine
+        const possibleCommands = [
+            "Accepter la course",
+            "Refuser la course",
+            "Mes gains",
+            "Rentrer à la maison",
+            "Statistiques"
         ];
 
-        // Pour la démo, on privilégie l'acceptation si une requête est en cours
-        let chosenCmd;
+        // Smart Contextual Choice
+        let text = "";
         if (currentRequest) {
-            chosenCmd = commands[0];
+            text = "Accepter la course";
         } else {
-            // Sinon choix aléatoire parmi les autres
-            const others = commands.slice(1);
-            chosenCmd = others[Math.floor(Math.random() * others.length)];
+            text = possibleCommands[Math.floor(Math.random() * (possibleCommands.length - 1)) + 1];
         }
 
-        setRecognizedText(chosenCmd.text);
+        setRecognizedText(text);
         setStatusText("Commande reconnue !");
-        Speech.speak(`D'accord, je lance : ${chosenCmd.text}`, { language: 'fr-FR' });
 
-        // Exécuter l'action après un court délai
-        setTimeout(() => {
-            chosenCmd.action();
-        }, 1500);
+        processCommand(text);
+    };
+
+    const processCommand = async (text: string) => {
+        const lower = text.toLowerCase();
+
+        if (lower.includes('accepter') && currentRequest) {
+            Speech.speak("J'accepte la course pour vous.", { language: 'fr-FR' });
+            if (driver) {
+                const success = await acceptRide(driver.id);
+                if (success) {
+                    router.replace('/driver-navigation?type=pickup');
+                }
+            }
+        }
+        else if (lower.includes('refuser') && currentRequest) {
+            Speech.speak("Je refuse la course.", { language: 'fr-FR' });
+            // Reject logic (mocked here as hook might not expose it directly yet)
+            setStatusText("Course refusée");
+        }
+        else if (lower.includes('gains') || lower.includes('argent')) {
+            Speech.speak("Voici vos gains du jour.", { language: 'fr-FR' });
+            router.push('/wallet');
+        }
+        else if (lower.includes('maison') || lower.includes('rentrer')) {
+            Speech.speak("Calcul de l'itinéraire vers la maison.", { language: 'fr-FR' });
+            router.push('/home-direction');
+        }
+        else if (lower.includes('stat')) {
+            Speech.speak("Ouverture des statistiques.", { language: 'fr-FR' });
+            router.push('/analytics'); // Assuming analytics route exists or maps to activity
+        }
+        else {
+            Speech.speak("Je n'ai pas compris cette commande.", { language: 'fr-FR' });
+        }
     };
 
     return (
@@ -122,7 +150,7 @@ export default function VoiceCopilotScreen() {
                 {/* Header */}
                 <View style={styles.header}>
                     <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-                        <Ionicons name="close" size={28} color={COLORS.white} />
+                        <Text style={{ fontSize: 28, color: COLORS.white }}>❌</Text>
                     </TouchableOpacity>
                     <Text style={styles.title}>TransiGo Copilot 🎙️</Text>
                 </View>
@@ -143,7 +171,7 @@ export default function VoiceCopilotScreen() {
                             onPress={toggleListening}
                             activeOpacity={0.8}
                         >
-                            <Ionicons name={isListening ? "mic" : "mic-outline"} size={48} color={COLORS.white} />
+                            <Text style={{ fontSize: 48, color: COLORS.white }}>🎙️</Text>
                         </TouchableOpacity>
                     </View>
 

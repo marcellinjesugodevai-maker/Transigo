@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Alert, Image as RNImage } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -8,6 +8,7 @@ import { supabase } from '../../src/services/supabaseService';
 import { useState } from 'react';
 
 const { width } = Dimensions.get('window');
+import { DriverImage, DeliveryImage, SellerImage } from './profileAssets';
 
 const COLORS = {
     primary: '#FF6B00',
@@ -22,8 +23,7 @@ const COLORS = {
 const PROFILES = [
     {
         id: 'driver',
-        icon: 'car-sport',
-        emoji: '🚗',
+        image: DriverImage,
         title: 'Chauffeur VTC',
         description: 'Transport de passagers',
         color: COLORS.primary,
@@ -32,8 +32,7 @@ const PROFILES = [
     },
     {
         id: 'delivery',
-        icon: 'cube',
-        emoji: '📦',
+        image: DeliveryImage,
         title: 'Livreur',
         description: 'Livraison colis & repas',
         color: COLORS.secondary,
@@ -42,8 +41,7 @@ const PROFILES = [
     },
     {
         id: 'seller',
-        icon: 'storefront',
-        emoji: '🏪',
+        image: SellerImage,
         title: 'Vendeur',
         description: 'Vendre sur TransiGo',
         color: COLORS.purple,
@@ -107,7 +105,7 @@ export default function ChooseProfileScreen() {
         <View style={styles.container}>
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => router.back()} style={{ marginBottom: 16 }}>
-                    <Ionicons name="arrow-back" size={24} color={COLORS.black} />
+                    <Text style={{ fontSize: 24, color: COLORS.black }}>⬅️</Text>
                 </TouchableOpacity>
                 <Text style={styles.title}>TransiGo Business</Text>
                 <Text style={styles.subtitle}>
@@ -130,8 +128,9 @@ export default function ChooseProfileScreen() {
                             start={{ x: 0, y: 0 }}
                             end={{ x: 1, y: 1 }}
                         >
+                            {/* Profile Image */}
                             <View style={styles.iconContainer}>
-                                <Text style={styles.emoji}>{profile.emoji}</Text>
+                                <RNImage source={{ uri: profile.image }} style={styles.profileImage} resizeMode="contain" />
                             </View>
                             <View style={{ flex: 1 }}>
                                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -145,11 +144,9 @@ export default function ChooseProfileScreen() {
                                 <Text style={styles.profileDescInline}>{profile.description}</Text>
                             </View>
                             <View style={styles.arrowContainer}>
-                                <Ionicons
-                                    name={profile.comingSoon ? "lock-closed" : "arrow-forward"}
-                                    size={20}
-                                    color={COLORS.white}
-                                />
+                                <Text style={{ fontSize: 20, color: COLORS.white }}>
+                                    {profile.comingSoon ? "🔒" : "➡️"}
+                                </Text>
                             </View>
                         </LinearGradient>
                     </TouchableOpacity>
@@ -203,16 +200,15 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     iconContainer: {
-        width: 60,
-        height: 60,
-        borderRadius: 30,
-        backgroundColor: 'rgba(255,255,255,0.2)',
+        width: 100,
+        height: 70,
         justifyContent: 'center',
         alignItems: 'center',
-        marginRight: 16,
+        marginRight: 10,
     },
-    emoji: {
-        fontSize: 28,
+    profileImage: {
+        width: '100%',
+        height: '100%',
     },
     profileTitle: {
         fontSize: 20,

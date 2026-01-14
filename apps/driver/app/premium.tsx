@@ -131,7 +131,7 @@ export default function PremiumScreen() {
             {/* Header */}
             <LinearGradient colors={[COLORS.premium, COLORS.premiumDark]} style={styles.header}>
                 <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-                    <Ionicons name="arrow-back" size={24} color={COLORS.white} />
+                    <Text style={{ fontSize: 24, color: COLORS.white }}>⬅️</Text>
                 </TouchableOpacity>
                 <View style={styles.headerContent}>
                     <Text style={styles.headerTitle}>👑 Premium & Wallet</Text>
@@ -199,7 +199,7 @@ export default function PremiumScreen() {
                         <TouchableOpacity style={styles.activateBtn} onPress={handleBoost}>
                             <LinearGradient colors={[COLORS.secondary, COLORS.secondaryDark]} style={styles.activateBtnGradient}>
                                 <Text style={styles.activateBtnText}>ACTIVER LE BOOST</Text>
-                                <Ionicons name="rocket" size={20} color={COLORS.white} />
+                                <Text style={{ fontSize: 20 }}>🚀</Text>
                             </LinearGradient>
                         </TouchableOpacity>
                     </>
@@ -234,7 +234,8 @@ export default function PremiumScreen() {
                                     <View style={styles.subFeatures}>
                                         {sub.features.map((feature, i) => (
                                             <View key={i} style={styles.subFeature}>
-                                                <Ionicons name="checkmark-circle" size={16} color={COLORS.secondary} />
+
+                                                <Text style={{ fontSize: 16, color: COLORS.secondary }}>✅</Text>
                                                 <Text style={styles.subFeatureText}>{feature}</Text>
                                             </View>
                                         ))}
@@ -264,11 +265,11 @@ export default function PremiumScreen() {
 
                                 <View style={styles.withdrawOptions}>
                                     <TouchableOpacity style={styles.withdrawBtn}>
-                                        <Ionicons name="flash" size={18} color={COLORS.secondary} />
+                                        <Text style={{ fontSize: 18, color: COLORS.secondary }}>⚡</Text>
                                         <Text style={styles.withdrawBtnText}>Instantané (2%)</Text>
                                     </TouchableOpacity>
                                     <TouchableOpacity style={[styles.withdrawBtn, styles.withdrawBtnPrimary]}>
-                                        <Ionicons name="time" size={18} color={COLORS.white} />
+                                        <Text style={{ fontSize: 18, color: COLORS.white }}>⏱️</Text>
                                         <Text style={[styles.withdrawBtnText, { color: COLORS.white }]}>24h (Gratuit)</Text>
                                     </TouchableOpacity>
                                 </View>

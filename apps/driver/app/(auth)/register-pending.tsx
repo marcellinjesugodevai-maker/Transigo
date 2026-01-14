@@ -274,6 +274,33 @@ export default function RegisterPendingScreen() {
                 </TouchableOpacity>
             </View>
 
+            {/* Logout / Reset Button */}
+            <View style={styles.section}>
+                <TouchableOpacity
+                    style={[styles.refreshButton, { borderColor: 'red', marginTop: -10 }]}
+                    onPress={() => {
+                        Alert.alert(
+                            'Se déconnecter',
+                            'Voulez-vous vous déconnecter et recommencer ?',
+                            [
+                                { text: 'Annuler', style: 'cancel' },
+                                {
+                                    text: 'Déconnexion',
+                                    style: 'destructive',
+                                    onPress: () => {
+                                        useDriverStore.getState().setDriver(null as any);
+                                        router.replace('/(auth)/login');
+                                    }
+                                }
+                            ]
+                        );
+                    }}
+                >
+                    <Ionicons name="log-out-outline" size={20} color="red" />
+                    <Text style={[styles.refreshButtonText, { color: 'red' }]}>Se déconnecter</Text>
+                </TouchableOpacity>
+            </View>
+
             {/* Footer Note */}
             <View style={styles.footerNote}>
                 <Ionicons name="information-circle-outline" size={16} color={COLORS.gray600} />

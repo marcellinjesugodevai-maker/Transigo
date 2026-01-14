@@ -160,6 +160,31 @@ export const rideService = {
             )
             .subscribe();
     },
+
+    // S'abonner à la position du chauffeur (Realtime)
+    subscribeToDriverLocation: (driverId: string, callback: (location: { lat: number; lng: number }) => void) => {
+        return supabase
+            .channel(`driver-loc-${driverId}`)
+            .on(
+                'postgres_changes',
+                {
+                    event: 'UPDATE',
+                    schema: 'public',
+                    table: 'drivers',
+                    filter: `id=eq.${driverId}`
+                },
+                (payload) => {
+                    const newDriver = payload.new;
+                    if (newDriver.current_lat && newDriver.current_lng) {
+                        callback({
+                            lat: newDriver.current_lat,
+                            lng: newDriver.current_lng
+                        });
+                    }
+                }
+            )
+            .subscribe();
+    },
     // ============================================
     // Fonction utilitaire : Calcul de distance Haversine
     // Retourne la distance en km entre deux points GPS
