@@ -15,19 +15,19 @@ const withFixedReactNativePath = (config) => {
         // Replace patterns like: includeBuild("null/ReactAndroid") with the correct path
         contents = contents.replace(
             /includeBuild\s*\(\s*['"]\s*null/g,
-            'includeBuild("../../node_modules/react-native'
+            'includeBuild("../../../node_modules/react-native'
         );
 
         // Also fix any direct null references in the react plugin path
         contents = contents.replace(
             /file\s*\(\s*['"]\s*null/g,
-            'file("../../node_modules/react-native'
+            'file("../../../node_modules/react-native'
         );
 
         // Ensure reactNativeDir is set correctly if it's referencing null
         contents = contents.replace(
             /reactNativeDir\s*=\s*null/g,
-            'reactNativeDir = file("../../node_modules/react-native")'
+            'reactNativeDir = file("../../../node_modules/react-native")'
         );
 
         config.modResults.contents = contents;
