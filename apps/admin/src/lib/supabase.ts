@@ -150,21 +150,23 @@ export const adminService = {
         return { error };
     },
 
-    // Bloquer/Débloquer chauffeur
+    // Bloquer/Débloquer chauffeur (RPC)
     toggleDriverBlock: async (driverId: string, blocked: boolean) => {
-        const { error } = await supabase
-            .from('drivers')
-            .update({ is_blocked: blocked, is_online: false })
-            .eq('id', driverId);
+        const { error } = await supabase.rpc('admin_block_driver', {
+            p_driver_id: driverId,
+            p_blocked: blocked,
+            p_secret_key: 'TRANSIGO_ADMIN_SECRET_2026'
+        });
         return { error };
     },
 
-    // Vérifier un chauffeur (validation admin)
+    // Vérifier un chauffeur (validation admin - RPC)
     verifyDriver: async (driverId: string, verified: boolean) => {
-        const { error } = await supabase
-            .from('drivers')
-            .update({ is_verified: verified })
-            .eq('id', driverId);
+        const { error } = await supabase.rpc('admin_verify_driver', {
+            p_driver_id: driverId,
+            p_verified: verified,
+            p_secret_key: 'TRANSIGO_ADMIN_SECRET_2026'
+        });
         return { error };
     },
 

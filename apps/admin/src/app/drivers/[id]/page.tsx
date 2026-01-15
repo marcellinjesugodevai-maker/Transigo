@@ -67,10 +67,7 @@ export default function DriverDetailPage() {
         if (!confirm('Valider ce chauffeur ? Il pourra alors utiliser l\'application.')) return;
 
         setActionLoading(true);
-        const { error } = await supabase
-            .from('drivers')
-            .update({ is_verified: true })
-            .eq('id', driverId);
+        const { error } = await adminService.verifyDriver(driverId, true);
 
         if (error) {
             alert('Erreur: ' + error.message);
@@ -85,10 +82,7 @@ export default function DriverDetailPage() {
         if (!confirm('Rejeter ce chauffeur ? Son compte sera bloqué.')) return;
 
         setActionLoading(true);
-        const { error } = await supabase
-            .from('drivers')
-            .update({ is_blocked: true, is_verified: false })
-            .eq('id', driverId);
+        const { error } = await adminService.toggleDriverBlock(driverId, true);
 
         if (error) {
             alert('Erreur: ' + error.message);
