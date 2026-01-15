@@ -1,7 +1,6 @@
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Alert, Image as RNImage } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
 import { useDriverRegStore } from '../../src/stores/driverRegStore';
 import { useDriverStore } from '../../src/stores/driverStore';
 import { supabase } from '../../src/services/supabaseService';

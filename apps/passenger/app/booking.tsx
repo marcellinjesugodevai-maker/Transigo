@@ -33,76 +33,52 @@ const SUPABASE_STORAGE = 'https://zndgvloyaitopczhjddq.supabase.co/storage/v1/ob
 
 const VEHICLE_TYPES = [
     {
-        id: 'waka',
-        name: 'Waka',
+        id: 'standard',
+        name: 'Standard',
         description: 'Économique',
         capacity: '4 places',
         duration: '3 min',
         isTop: true,
-        image: `${SUPABASE_STORAGE}/vehicles/waka.png`,
-        cardColor: '#26A69A', // Teal
+        image: { uri: `${SUPABASE_STORAGE}/standard.png` },
+        cardColor: '#4A90E2', // Blue
         textColor: '#FFFFFF',
         badge: 'Eco',
     },
     {
-        id: 'djassa',
-        name: 'Djassa',
-        description: 'Confort standard',
-        capacity: '4 places',
+        id: 'comfort',
+        name: 'Confort',
+        description: 'Berline climatisée',
+        capacity: '4 places • AC',
         duration: '5 min',
         isTop: false,
-        image: `${SUPABASE_STORAGE}/vehicles/djassa.png`,
-        cardColor: '#546E7A', // Blue Grey
+        image: { uri: `${SUPABASE_STORAGE}/comfort.png` },
+        cardColor: '#5C6BC0', // Indigo
         textColor: '#FFFFFF',
-        badge: 'Standard',
+        badge: 'Confort',
     },
     {
-        id: 'prime',
-        name: 'Prime',
-        description: 'Confort climatisé',
-        capacity: '4 places • AC',
-        duration: '8 min',
-        isTop: false,
-        image: `${SUPABASE_STORAGE}/vehicles/prime.png`,
-        cardColor: '#1E88E5', // Blue (Reference)
-        textColor: '#FFFFFF',
-        badge: 'AC + Wifi',
-    },
-    {
-        id: 'elite',
-        name: 'Elite',
-        description: 'Premium luxe',
+        id: 'luxury',
+        name: 'Luxe',
+        description: 'Premium VIP',
         capacity: '4 places • VIP',
         duration: '10 min',
         isTop: false,
-        image: 'https://images.unsplash.com/photo-1563720223185-11003d516935?w=200&q=80',
-        cardColor: '#311B92', // Deep Purple (Reference)
+        image: { uri: `${SUPABASE_STORAGE}/luxury.png` },
+        cardColor: '#263238', // Dark Blue Grey
         textColor: '#FFFFFF',
         badge: 'Premium',
     },
     {
         id: 'family',
-        name: 'Family',
+        name: 'Famille',
         description: 'Van 6+ places',
         capacity: '6 places',
         duration: '12 min',
         isTop: false,
-        image: 'https://images.unsplash.com/photo-1559416523-140ddc3d238c?w=200&q=80',
-        cardColor: '#43A047', // Green (Reference)
+        image: { uri: `${SUPABASE_STORAGE}/family.png` },
+        cardColor: '#3949AB', // Dark Indigo
         textColor: '#FFFFFF',
         badge: 'Van',
-    },
-    {
-        id: 'flash',
-        name: 'Flash',
-        description: 'Moto rapide',
-        capacity: '1 place',
-        duration: '2 min',
-        isTop: false,
-        image: 'https://images.unsplash.com/photo-1558980664-769d59546b3d?w=200&q=80',
-        cardColor: '#FF6F00', // Amber/Orange (Reference)
-        textColor: '#FFFFFF',
-        badge: 'Moto',
     },
 ];
 
@@ -343,7 +319,7 @@ export default function BookingScreen() {
                                     {/* Image du véhicule */}
                                     <View style={styles.vehicleImageContainer}>
                                         <Image
-                                            source={{ uri: vehicle.image }}
+                                            source={vehicle.image}
                                             style={styles.vehicleImage}
                                             resizeMode="contain"
                                         />
@@ -927,7 +903,7 @@ const styles = StyleSheet.create({
         color: COLORS.white,
     },
     vehicleImageContainer: {
-        height: 60,
+        height: 120,
         justifyContent: 'center',
         alignItems: 'center',
         marginBottom: SPACING.sm,
@@ -957,8 +933,8 @@ const styles = StyleSheet.create({
         color: COLORS.textSecondary,
     },
     vehicleImage: {
-        width: 80,
-        height: 50,
+        width: 120,
+        height: 100,
     },
     vehicleDescription: {
         fontSize: 10,

@@ -1,7 +1,6 @@
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
 import { useDriverRegStore } from '../../src/stores/driverRegStore';
 import { useEffect } from 'react';
 
@@ -51,3 +50,4 @@ const styles = StyleSheet.create({
     gradientBtn: { paddingVertical: 18, alignItems: 'center' },
     buttonText: { color: COLORS.white, fontSize: 18, fontWeight: 'bold' },
 });
+

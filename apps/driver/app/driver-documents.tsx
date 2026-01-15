@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, StatusBar, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useDriverStore } from '../src/stores/driverStore';
 import { driverService } from '../src/services/supabaseService';
@@ -196,3 +195,4 @@ const styles = StyleSheet.create({
     },
     supportBtnText: { color: COLORS.secondary, fontWeight: 'bold', fontSize: 14 },
 });
+

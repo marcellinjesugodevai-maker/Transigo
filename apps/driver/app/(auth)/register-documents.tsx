@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, ActivityIndicator, Alert, Platform } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
 import { useDriverRegStore } from '../../src/stores/driverRegStore';
 import { supabase } from '../../src/services/supabaseService';
 import { useDriverStore } from '../../src/stores/driverStore';
@@ -201,9 +200,9 @@ export default function RegisterDocumentsScreen() {
                     {isUploading ? (
                         <ActivityIndicator color={COLORS.primary} size="small" />
                     ) : isUploaded ? (
-                        <Ionicons name="checkmark-circle" size={24} color={COLORS.success} />
+                        <Text style={{ fontSize: 24 }}>✅</Text>
                     ) : (
-                        <Ionicons name="cloud-upload-outline" size={24} color={COLORS.gray600} />
+                        <Text style={{ fontSize: 24 }}>☁️</Text>
                     )}
                 </View>
                 <View style={styles.docInfo}>
@@ -212,7 +211,7 @@ export default function RegisterDocumentsScreen() {
                 </View>
                 {isUploaded && (
                     <TouchableOpacity onPress={() => updateData({ [key]: null })}>
-                        <Ionicons name="trash-outline" size={20} color={COLORS.gray600} />
+                        <Text style={{ fontSize: 18 }}>🗑️</Text>
                     </TouchableOpacity>
                 )}
             </TouchableOpacity>
@@ -223,16 +222,16 @@ export default function RegisterDocumentsScreen() {
         <View style={styles.container}>
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-                    <Ionicons name="arrow-back" size={24} color={COLORS.black} />
+                    <Text style={{ fontSize: 24 }}>⬅️</Text>
                 </TouchableOpacity>
                 <Text style={styles.title}>Documents</Text>
                 <View style={{ width: 24 }} />
             </View>
 
             <View style={styles.progressContainer}>
-                <View style={[styles.progressStep, { backgroundColor: COLORS.secondary }]}><Ionicons name="checkmark" size={16} color="white" /></View>
+                <View style={[styles.progressStep, { backgroundColor: COLORS.secondary }]}><Text style={{ color: 'white', fontSize: 14 }}>✅</Text></View>
                 <View style={[styles.progressLine, { backgroundColor: COLORS.secondary }]} />
-                <View style={[styles.progressStep, { backgroundColor: COLORS.secondary }]}><Ionicons name="checkmark" size={16} color="white" /></View>
+                <View style={[styles.progressStep, { backgroundColor: COLORS.secondary }]}><Text style={{ color: 'white', fontSize: 14 }}>✅</Text></View>
                 <View style={[styles.progressLine, { backgroundColor: COLORS.secondary }]} />
                 <View style={[styles.progressStep, styles.activeStep]}><Text style={styles.stepText}>3</Text></View>
             </View>
@@ -289,7 +288,7 @@ export default function RegisterDocumentsScreen() {
                         style={styles.gradientBtn}
                     >
                         <Text style={[styles.nextText, !isComplete && styles.disabledText]}>Soumettre mon dossier</Text>
-                        {isComplete && <Ionicons name="checkmark-done" size={20} color={COLORS.white} />}
+                        {isComplete && <Text style={{ fontSize: 18, color: COLORS.white }}>✅</Text>}
                     </LinearGradient>
                 </TouchableOpacity>
             </View>

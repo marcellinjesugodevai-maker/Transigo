@@ -245,8 +245,8 @@ export default function DownloadPage() {
                         </ul>
 
                         <a
-                            href="/apks/transigo-business-v2.apk"
-                            download="TransiGo-Business-v2.apk"
+                            href="/apks/transigo-business.apk"
+                            download="TransiGo-Business.apk"
                             className="w-full bg-gradient-to-r from-[#00C853] to-[#009624] hover:from-[#00E676] hover:to-[#00C853] text-white font-bold py-4 px-6 rounded-xl flex items-center justify-center gap-3 transition-all shadow-lg shadow-green-600/20 group-hover:shadow-green-600/40"
                         >
                             <Download size={24} />

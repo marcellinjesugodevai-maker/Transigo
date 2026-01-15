@@ -18,7 +18,6 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
 import { rideService } from '../src/services/supabaseService';
 import { useDriverStore } from '../src/stores/driverStore';
 import { carpoolDriverService } from '../src/services/carpoolDriverService';
@@ -454,3 +453,4 @@ const styles = StyleSheet.create({
     acceptGradient: { paddingVertical: 12, alignItems: 'center' },
     acceptText: { color: COLORS.white, fontWeight: 'bold' }
 });
+

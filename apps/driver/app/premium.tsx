@@ -16,8 +16,6 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
-
 const { width } = Dimensions.get('window');
 
 const COLORS = {
@@ -409,3 +407,4 @@ const styles = StyleSheet.create({
     txDate: { fontSize: 11, color: COLORS.gray600, marginTop: 2 },
     txAmount: { fontSize: 14, fontWeight: 'bold' },
 });
+

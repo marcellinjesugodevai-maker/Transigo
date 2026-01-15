@@ -16,7 +16,6 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
 import { rideService } from '../src/services/supabaseService';
 import { useDriverStore } from '../src/stores/driverStore';
 import { startOfWeek, endOfWeek, eachDayOfInterval, format, isSameDay, getHours } from 'date-fns';
@@ -392,3 +391,4 @@ const styles = StyleSheet.create({
     insightMessage: { fontSize: 12, color: COLORS.gray600, marginTop: 2 },
     emptyText: { textAlign: 'center', color: COLORS.gray600, marginTop: 10, fontSize: 14 },
 });
+

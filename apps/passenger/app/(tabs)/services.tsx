@@ -156,9 +156,9 @@ export default function ServicesScreen() {
                     </LinearGradient>
                 </TouchableOpacity>
 
-                {/* Lottery Card (Secondary) */}
+                {/* Lottery Card (Secondary) - BLOCKED */}
                 <TouchableOpacity
-                    style={styles.lotteryCard}
+                    style={[styles.lotteryCard, { opacity: 0.8 }]}
                     onPress={handleLotteryPress}
                     activeOpacity={0.9}
                 >
@@ -170,9 +170,14 @@ export default function ServicesScreen() {
                     >
                         <Text style={styles.lotteryEmoji}>🎰</Text>
                         <View style={styles.lotteryText}>
-                            <Text style={styles.lotteryTitle}>
-                                {language === 'fr' ? 'Loterie TransiGo' : 'TransiGo Lottery'}
-                            </Text>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                                <Text style={styles.lotteryTitle}>
+                                    {language === 'fr' ? 'Loterie TransiGo' : 'TransiGo Lottery'}
+                                </Text>
+                                <View style={{ backgroundColor: '#FFF', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 }}>
+                                    <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#FFA000' }}>BIENTÔT</Text>
+                                </View>
+                            </View>
                             <Text style={styles.lotterySubtitle}>
                                 {language === 'fr' ? 'Tentez votre chance et gagnez !' : 'Try your luck and win!'}
                             </Text>
@@ -181,16 +186,21 @@ export default function ServicesScreen() {
                     </LinearGradient>
                 </TouchableOpacity>
 
-                {/* Parrainage Section */}
-                <View style={[styles.referralSection, { backgroundColor: colors.card }]}>
+                {/* Parrainage Section - BLOCKED */}
+                <View style={[styles.referralSection, { backgroundColor: colors.card, opacity: 0.85 }]}>
                     <View style={styles.referralHeader}>
                         <View style={styles.referralIconContainer}>
                             <Icon name="people" size={28} color={COLORS.primary} />
                         </View>
                         <View style={styles.referralHeaderText}>
-                            <Text style={[styles.referralTitle, { color: colors.text }]}>
-                                {language === 'fr' ? 'Programme de Parrainage' : 'Referral Program'}
-                            </Text>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                                <Text style={[styles.referralTitle, { color: colors.text }]}>
+                                    {language === 'fr' ? 'Programme de Parrainage' : 'Referral Program'}
+                                </Text>
+                                <View style={{ backgroundColor: COLORS.primary, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 }}>
+                                    <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#FFF' }}>BIENTÔT</Text>
+                                </View>
+                            </View>
                             <Text style={[styles.referralSubtitle, { color: colors.textSecondary }]}>
                                 {language === 'fr' ? 'Invitez vos amis et gagnez' : 'Invite friends and earn'}
                             </Text>
@@ -240,10 +250,10 @@ export default function ServicesScreen() {
                         </TouchableOpacity>
                     </View>
 
-                    {/* Share Button */}
+                    {/* Share Button - REDIRECT TO SCREEN FOR BLOCKING */}
                     <TouchableOpacity
                         style={styles.shareButton}
-                        onPress={handleShare}
+                        onPress={() => router.push('/referral')}
                         activeOpacity={0.9}
                     >
                         <LinearGradient
@@ -252,9 +262,9 @@ export default function ServicesScreen() {
                             end={{ x: 1, y: 0 }}
                             style={styles.shareButtonGradient}
                         >
-                            <Icon name="share-social" size={22} color="#fff" />
+                            <Icon name="lock-closed" size={22} color="#fff" />
                             <Text style={styles.shareButtonText}>
-                                {language === 'fr' ? 'Partager avec mes amis' : 'Share with friends'}
+                                {language === 'fr' ? 'Bientôt disponible' : 'Coming soon'}
                             </Text>
                         </LinearGradient>
                     </TouchableOpacity>

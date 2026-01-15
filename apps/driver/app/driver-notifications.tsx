@@ -14,8 +14,6 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
-
 const COLORS = {
     primary: '#FF6B00',
     secondary: '#00C853',
@@ -257,3 +255,4 @@ const styles = StyleSheet.create({
     emptyIcon: { fontSize: 50, marginBottom: 12 },
     emptyText: { fontSize: 14, color: COLORS.gray600 },
 });
+

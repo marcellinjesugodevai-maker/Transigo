@@ -31,7 +31,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
       },
-      "package": "com.transigo.passenger2",
+      "package": "com.transigo.passenger",
       "intentFilters": [
         {
           "action": "VIEW",
@@ -120,9 +120,9 @@
     },
     "extra": {
       "eas": {
-        "projectId": "952fce41-2cb4-41a4-8658-2cad036f7056"
+        "projectId": "bf46f566-aedf-4bcd-aa53-380e922a65ed"
       }
     },
-    "owner": "marceljesugo"
+    "owner": "oswald123"
   }
 }

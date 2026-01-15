@@ -18,7 +18,6 @@ import {
 } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
 import * as Speech from 'expo-speech';
 import * as Location from 'expo-location';
 import OSMMap from '../src/components/OSMMap';
@@ -378,3 +377,4 @@ const styles = StyleSheet.create({
     },
     confirmBtnText: { color: COLORS.white, fontSize: 16, fontWeight: 'bold' },
 });
+

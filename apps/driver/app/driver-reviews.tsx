@@ -15,7 +15,6 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
 import { useDriverStore } from '../src/stores/driverStore';
 
 const COLORS = {
@@ -203,3 +202,4 @@ const styles = StyleSheet.create({
         lineHeight: 18,
     },
 });
+

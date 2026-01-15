@@ -14,7 +14,6 @@ import {
     ActivityIndicator,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
 import { rideService } from '../../src/services/supabaseService';
 import { useDriverStore } from '../../src/stores/driverStore';
 import { useProfileTerms } from '../../src/hooks/useProfileTerms';

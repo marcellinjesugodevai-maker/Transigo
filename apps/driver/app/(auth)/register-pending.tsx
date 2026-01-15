@@ -16,7 +16,6 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../src/services/supabaseService';
 import { useDriverStore } from '../../src/stores/driverStore';
 
@@ -39,7 +38,7 @@ interface Step {
     id: number;
     title: string;
     description: string;
-    icon: keyof typeof Ionicons.glyphMap;
+    emoji: string;
     status: 'completed' | 'current' | 'pending';
 }
 
@@ -52,28 +51,28 @@ export default function RegisterPendingScreen() {
             id: 1,
             title: 'Documents envoyés',
             description: 'Vos documents ont été soumis avec succès',
-            icon: 'document-text',
+            emoji: '📄',
             status: 'completed',
         },
         {
             id: 2,
             title: 'Vérification en cours',
             description: 'Notre équipe examine votre dossier (24-72h)',
-            icon: 'search',
+            emoji: '🔍',
             status: 'current',
         },
         {
             id: 3,
             title: 'Appel de confirmation',
             description: 'Vous serez contacté par téléphone ou WhatsApp',
-            icon: 'call',
+            emoji: '📞',
             status: 'pending',
         },
         {
             id: 4,
             title: 'Visite à l\'agence',
             description: 'Remise des documents originaux',
-            icon: 'business',
+            emoji: '🏢',
             status: 'pending',
         },
     ];
@@ -163,7 +162,7 @@ export default function RegisterPendingScreen() {
                 style={styles.header}
             >
                 <View style={styles.successIconContainer}>
-                    <Ionicons name="checkmark-circle" size={80} color={COLORS.white} />
+                    <Text style={{ fontSize: 70, color: COLORS.white }}>✅</Text>
                 </View>
                 <Text style={styles.headerTitle}>Dossier Soumis !</Text>
                 <Text style={styles.headerSubtitle}>
@@ -182,7 +181,7 @@ export default function RegisterPendingScreen() {
                                 <View style={styles.timelineLeft}>
                                     <View style={[styles.timelineDot, { backgroundColor: stepStyle.bg }]}>
                                         {step.status === 'completed' ? (
-                                            <Ionicons name="checkmark" size={16} color={COLORS.white} />
+                                            <Text style={{ fontSize: 14, color: COLORS.white }}>✅</Text>
                                         ) : step.status === 'current' ? (
                                             <ActivityIndicator size="small" color={COLORS.white} />
                                         ) : (
@@ -198,7 +197,7 @@ export default function RegisterPendingScreen() {
                                 </View>
                                 <View style={styles.timelineContent}>
                                     <View style={styles.timelineHeader}>
-                                        <Ionicons name={step.icon} size={20} color={stepStyle.bg} />
+                                        <Text style={{ fontSize: 18 }}>{step.emoji}</Text>
                                         <Text style={[
                                             styles.timelineTitle,
                                             step.status === 'pending' && { color: COLORS.gray600 }
@@ -218,7 +217,7 @@ export default function RegisterPendingScreen() {
             <View style={styles.section}>
                 <View style={[styles.infoCard, { borderLeftColor: COLORS.info }]}>
                     <View style={styles.infoCardHeader}>
-                        <Ionicons name="call" size={24} color={COLORS.info} />
+                        <Text style={{ fontSize: 22 }}>📞</Text>
                         <Text style={styles.infoCardTitle}>Vous serez contacté sous 72h</Text>
                     </View>
                     <Text style={styles.infoCardText}>
@@ -234,7 +233,7 @@ export default function RegisterPendingScreen() {
                 <View style={styles.documentsCard}>
                     {documentsToPresent.map((doc, index) => (
                         <View key={index} style={styles.documentItem}>
-                            <Ionicons name="document-attach" size={18} color={COLORS.primary} />
+                            <Text style={{ fontSize: 18 }}>📁</Text>
                             <Text style={styles.documentText}>{doc}</Text>
                         </View>
                     ))}
@@ -246,11 +245,11 @@ export default function RegisterPendingScreen() {
                 <Text style={styles.sectionTitle}>💬 Une question ?</Text>
                 <View style={styles.contactButtons}>
                     <TouchableOpacity style={styles.whatsappButton} onPress={handleWhatsAppContact}>
-                        <Ionicons name="logo-whatsapp" size={24} color={COLORS.white} />
+                        <Text style={{ fontSize: 22 }}>💬</Text>
                         <Text style={styles.whatsappButtonText}>Contacter via WhatsApp</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.callButton} onPress={handleCallAgency}>
-                        <Ionicons name="call-outline" size={24} color={COLORS.primary} />
+                        <Text style={{ fontSize: 22 }}>📞</Text>
                         <Text style={styles.callButtonText}>Appeler l'agence</Text>
                     </TouchableOpacity>
                 </View>
@@ -267,7 +266,7 @@ export default function RegisterPendingScreen() {
                         <ActivityIndicator color={COLORS.primary} />
                     ) : (
                         <>
-                            <Ionicons name="refresh" size={20} color={COLORS.primary} />
+                            <Text style={{ fontSize: 18 }}>🔄</Text>
                             <Text style={styles.refreshButtonText}>Actualiser mon statut</Text>
                         </>
                     )}
@@ -296,14 +295,14 @@ export default function RegisterPendingScreen() {
                         );
                     }}
                 >
-                    <Ionicons name="log-out-outline" size={20} color="red" />
+                    <Text style={{ fontSize: 18 }}>🚪</Text>
                     <Text style={[styles.refreshButtonText, { color: 'red' }]}>Se déconnecter</Text>
                 </TouchableOpacity>
             </View>
 
             {/* Footer Note */}
             <View style={styles.footerNote}>
-                <Ionicons name="information-circle-outline" size={16} color={COLORS.gray600} />
+                <Text style={{ fontSize: 14 }}>ℹ️</Text>
                 <Text style={styles.footerNoteText}>
                     Vous recevrez une notification dès que votre compte sera validé.
                 </Text>

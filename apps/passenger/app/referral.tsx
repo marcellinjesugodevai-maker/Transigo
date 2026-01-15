@@ -137,6 +137,77 @@ export default function ReferralScreen() {
                     </View>
                 </View>
             </ScrollView>
+
+            {/* Blocking Overlay */}
+            <View style={[StyleSheet.absoluteFill, {
+                backgroundColor: 'rgba(0,0,0,0.85)',
+                justifyContent: 'center',
+                alignItems: 'center',
+                padding: 40,
+                zIndex: 1000
+            }]}>
+                <View style={{
+                    backgroundColor: colors.card,
+                    borderRadius: 24,
+                    padding: 30,
+                    alignItems: 'center',
+                    width: '100%',
+                    borderWidth: 1,
+                    borderColor: COLORS.primary + '40'
+                }}>
+                    <View style={{
+                        width: 80,
+                        height: 80,
+                        borderRadius: 40,
+                        backgroundColor: COLORS.primary + '20',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        marginBottom: 20
+                    }}>
+                        <Icon name="lock-closed" size={40} color={COLORS.primary} />
+                    </View>
+
+                    <Text style={{
+                        fontSize: 22,
+                        fontWeight: 'bold',
+                        color: colors.text,
+                        textAlign: 'center',
+                        marginBottom: 12
+                    }}>
+                        Prochainement
+                    </Text>
+
+                    <Text style={{
+                        fontSize: 14,
+                        color: colors.textSecondary,
+                        textAlign: 'center',
+                        lineHeight: 22,
+                        marginBottom: 30
+                    }}>
+                        Cette fonctionnalité sera activée dès que le système de parrainage et les paiements mobiles seront finalisés. Merci de votre patience !
+                    </Text>
+
+                    <TouchableOpacity
+                        style={{
+                            backgroundColor: COLORS.primary,
+                            paddingHorizontal: 30,
+                            paddingVertical: 14,
+                            borderRadius: 16,
+                            width: '100%'
+                        }}
+                        onPress={() => router.back()}
+                    >
+                        <Text style={{
+                            color: '#FFF',
+                            fontWeight: 'bold',
+                            textAlign: 'center',
+                            fontSize: 16
+                        }}>
+                            Retour
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+            </View>
         </View>
     );
 }

@@ -1,6 +1,5 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, StatusBar } from 'react-native';
 import { router } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useDriverStore } from '../src/stores/driverStore';
 
@@ -153,3 +152,4 @@ const styles = StyleSheet.create({
         fontStyle: 'italic',
     },
 });
+

@@ -20,6 +20,13 @@ const ICON_MAP: Record<string, string> = {
     'bicycle': '🚲',
     'bus': '🚌',
     'airplane': '✈️',
+    'package': '📦',
+    'restaurant': '🍴',
+    'fast-food': '🍔',
+    'van': '🚐',
+    'motorcycle': '🏍️',
+    'business': '🏢',
+    'city': '🏙️',
 
     // Location & Map
     'location': '📍',
@@ -33,6 +40,7 @@ const ICON_MAP: Record<string, string> = {
     'chatbubble': '💬',
     'notifications': '🔔',
     'notifications-outline': '🔔',
+    'mic': '🎤',
 
     // Actions
     'search': '🔍',
@@ -45,6 +53,17 @@ const ICON_MAP: Record<string, string> = {
     'star': '⭐',
     'star-outline': '☆',
     'bookmark': '🔖',
+    'pencil': '✏️',
+    'trash': '🗑️',
+    'copy': '📋',
+    'copy-outline': '📋',
+    'share-social': '📤',
+    'trophy': '🏆',
+    'stats-chart': '📊',
+    'trending-up': '📈',
+    'hand-right': '👋',
+    'rocket': '🚀',
+    'flashlight': '🔦',
 
     // People & User
     'person': '👤',
@@ -64,8 +83,10 @@ const ICON_MAP: Record<string, string> = {
     'menu': '☰',
     'ellipsis-horizontal': '⋯',
     'ellipsis-vertical': '⋮',
-    'grid': '▦',
+    'grid': '🧩',
     'list': '☰',
+    'game-controller': '🎮',
+    'analytics': '📈',
 
     // Financial
     'wallet': '💰',
@@ -90,6 +111,8 @@ const ICON_MAP: Record<string, string> = {
     'lock-closed': '🔒',
     'lock-open': '🔓',
     'key': '🔑',
+    'keypad': '🔢',
+    'finger-print': '☝️',
 
     // Status
     'information-circle': 'ℹ',
@@ -105,6 +128,8 @@ const ICON_MAP: Record<string, string> = {
     'moon': '🌙',
     'share': '⤴',
     'download': '⬇',
+    'log-out-outline': '🚪',
+    'radio': '🔘',
     'cloud': '☁',
     'wifi': '📶',
     'battery-full': '🔋',

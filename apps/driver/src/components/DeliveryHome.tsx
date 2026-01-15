@@ -4,7 +4,6 @@ import {
     Switch, Animated, FlatList, Alert, Platform
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
 import { useDriverStore } from '../stores/driverStore';
 import { useDriverWalletStore } from '../stores';
 import * as Location from 'expo-location';

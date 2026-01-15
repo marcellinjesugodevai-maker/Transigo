@@ -14,7 +14,6 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
 import { useDriverWalletStore, formatCFA, WalletTransaction } from '../src/stores';
 import { useDriverStore } from '../src/stores/driverStore';
 import { useProfileTerms } from '../src/hooks/useProfileTerms';
@@ -616,4 +615,5 @@ const styles = StyleSheet.create({
         fontWeight: 'bold'
     }
 });
+
 

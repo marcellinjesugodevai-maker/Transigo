@@ -468,6 +468,77 @@ export default function LotteryScreen() {
 
                 <View style={{ height: 40 }} />
             </ScrollView>
+
+            {/* Blocking Overlay */}
+            <View style={[StyleSheet.absoluteFill, {
+                backgroundColor: 'rgba(0,0,0,0.85)',
+                justifyContent: 'center',
+                alignItems: 'center',
+                padding: 40,
+                zIndex: 1000
+            }]}>
+                <View style={{
+                    backgroundColor: colors.card,
+                    borderRadius: 24,
+                    padding: 30,
+                    alignItems: 'center',
+                    width: '100%',
+                    borderWidth: 1,
+                    borderColor: COLORS.primary + '40'
+                }}>
+                    <View style={{
+                        width: 80,
+                        height: 80,
+                        borderRadius: 40,
+                        backgroundColor: COLORS.primary + '20',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        marginBottom: 20
+                    }}>
+                        <Icon name="lock-closed" size={40} color={COLORS.primary} />
+                    </View>
+
+                    <Text style={{
+                        fontSize: 22,
+                        fontWeight: 'bold',
+                        color: colors.text,
+                        textAlign: 'center',
+                        marginBottom: 12
+                    }}>
+                        Prochainement
+                    </Text>
+
+                    <Text style={{
+                        fontSize: 14,
+                        color: colors.textSecondary,
+                        textAlign: 'center',
+                        lineHeight: 22,
+                        marginBottom: 30
+                    }}>
+                        La Loterie TransiGo sera bientôt disponible ! Vous pourrez gagner des courses gratuites et des cadeaux dès l'activation du système de récompenses.
+                    </Text>
+
+                    <TouchableOpacity
+                        style={{
+                            backgroundColor: COLORS.primary,
+                            paddingHorizontal: 30,
+                            paddingVertical: 14,
+                            borderRadius: 16,
+                            width: '100%'
+                        }}
+                        onPress={() => router.back()}
+                    >
+                        <Text style={{
+                            color: '#FFF',
+                            fontWeight: 'bold',
+                            textAlign: 'center',
+                            fontSize: 16
+                        }}>
+                            Retour
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+            </View>
         </View>
     );
 }

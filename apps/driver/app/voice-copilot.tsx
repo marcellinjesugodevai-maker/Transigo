@@ -11,7 +11,6 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
 import * as Speech from 'expo-speech';
 import { useRideRequests } from '../src/services/useRideRequests';
 import { useDriverStore } from '../src/stores/driverStore';
@@ -200,3 +199,4 @@ const styles = StyleSheet.create({
     micButtonActive: { backgroundColor: COLORS.listening },
     hintText: { color: COLORS.gray, textAlign: 'center', fontSize: 14, position: 'absolute', bottom: 60 },
 });
+

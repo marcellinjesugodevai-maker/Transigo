@@ -14,7 +14,6 @@ import {
     Alert,
 } from 'react-native';
 import { router } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
 import { supabase, driverService, rideService, walletService } from '../src/services/supabaseService';
 
 const COLORS = {
@@ -141,7 +140,7 @@ export default function SupabaseTestScreen() {
             {/* Header */}
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-                    <Ionicons name="arrow-back" size={24} color={COLORS.white} />
+                    <Text style={{ fontSize: 22, color: COLORS.white }}>⬅️</Text>
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Test Supabase</Text>
                 <View style={{ width: 40 }} />
@@ -160,13 +159,13 @@ export default function SupabaseTestScreen() {
                         <View key={index} style={styles.testRow}>
                             <View style={styles.testIcon}>
                                 {test.status === 'pending' && (
-                                    <Ionicons name="ellipse-outline" size={24} color={COLORS.gray600} />
+                                    <Text style={{ fontSize: 22 }}>⏳</Text>
                                 )}
                                 {test.status === 'success' && (
-                                    <Ionicons name="checkmark-circle" size={24} color={COLORS.success} />
+                                    <Text style={{ fontSize: 22 }}>✅</Text>
                                 )}
                                 {test.status === 'error' && (
-                                    <Ionicons name="close-circle" size={24} color={COLORS.error} />
+                                    <Text style={{ fontSize: 22 }}>❌</Text>
                                 )}
                             </View>
                             <View style={styles.testInfo}>
@@ -194,7 +193,7 @@ export default function SupabaseTestScreen() {
                         <ActivityIndicator color={COLORS.white} />
                     ) : (
                         <>
-                            <Ionicons name="play" size={20} color={COLORS.white} />
+                            <Text style={{ fontSize: 18 }}>▶️</Text>
                             <Text style={styles.buttonText}>Lancer les tests</Text>
                         </>
                     )}
@@ -204,7 +203,7 @@ export default function SupabaseTestScreen() {
                     style={[styles.button, styles.buttonSecondary]}
                     onPress={createTestRide}
                 >
-                    <Ionicons name="add-circle" size={20} color={COLORS.primary} />
+                    <Text style={{ fontSize: 18 }}>➕</Text>
                     <Text style={[styles.buttonText, { color: COLORS.primary }]}>
                         Créer une course test
                     </Text>
@@ -314,3 +313,4 @@ const styles = StyleSheet.create({
         color: COLORS.white,
     },
 });
+

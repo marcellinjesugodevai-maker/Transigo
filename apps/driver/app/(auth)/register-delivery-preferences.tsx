@@ -12,7 +12,6 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
 import { useDriverRegStore } from '../../src/stores/driverRegStore';
 
 const COLORS = {
@@ -79,11 +78,11 @@ export default function RegisterDeliveryPreferences() {
                     style={styles.header}
                 >
                     <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-                        <Ionicons name="arrow-back" size={24} color={COLORS.white} />
+                        <Text style={{ fontSize: 24 }}>⬅️</Text>
                     </TouchableOpacity>
                     <View style={styles.headerContent}>
                         <View style={styles.iconContainer}>
-                            <Ionicons name="cube" size={32} color={COLORS.primary} />
+                            <Text style={{ fontSize: 32 }}>📦</Text>
                         </View>
                         <Text style={styles.title}>Mode Livreur</Text>
                         <Text style={styles.subtitle}>Vos préférences de travail</Text>
@@ -112,7 +111,7 @@ export default function RegisterDeliveryPreferences() {
                                 </Text>
                                 {transportMode === mode.id && (
                                     <View style={styles.checkmark}>
-                                        <Ionicons name="checkmark-circle" size={20} color={COLORS.primary} />
+                                        <Text style={{ fontSize: 18 }}>✅</Text>
                                     </View>
                                 )}
                             </TouchableOpacity>
@@ -122,7 +121,7 @@ export default function RegisterDeliveryPreferences() {
                     {/* 2. Zone */}
                     <Text style={styles.sectionTitle}>Zone Préférée</Text>
                     <View style={styles.inputContainer}>
-                        <Ionicons name="location" size={20} color={COLORS.gray600} style={styles.inputIcon} />
+                        <Text style={[styles.inputIcon, { fontSize: 18 }]}>📍</Text>
                         <TextInput
                             style={styles.input}
                             placeholder="Ex: Cocody, Marcory, Plateau..."
@@ -174,7 +173,7 @@ export default function RegisterDeliveryPreferences() {
                             end={{ x: 1, y: 0 }}
                         >
                             <Text style={styles.nextButtonText}>Suivant</Text>
-                            <Ionicons name="arrow-forward" size={24} color={COLORS.white} />
+                            <Text style={{ fontSize: 22, color: COLORS.white }}>➡️</Text>
                         </LinearGradient>
                     </TouchableOpacity>
 

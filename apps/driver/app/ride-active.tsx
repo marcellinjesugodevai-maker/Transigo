@@ -1,6 +1,5 @@
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
 import { openNavigation } from '../src/utils/navigation';
 
 export default function RideActiveScreen() {
@@ -32,3 +31,4 @@ const styles = StyleSheet.create({
     btn: { backgroundColor: '#00C853', padding: 15, borderRadius: 10 },
     btnText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
 });
+

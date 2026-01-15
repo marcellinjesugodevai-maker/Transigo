@@ -18,7 +18,6 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import OSMMap from '../../src/components/OSMMap';
 import { useDriverPremiumsStore } from '../../src/stores/driverPremiumsStore';
 import { useDriverWalletStore, formatCFA } from '../../src/stores';

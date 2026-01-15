@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, Image, Alert } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useDriverRegStore } from '../../src/stores/driverRegStore';
 
@@ -92,7 +91,7 @@ export default function RegisterPersonalScreen() {
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.container}>
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-                    <Ionicons name="arrow-back" size={24} color={COLORS.black} />
+                    <Text style={{ fontSize: 24 }}>⬅️</Text>
                 </TouchableOpacity>
                 <Text style={styles.title}>Inscrivez-vous</Text>
                 <View style={{ width: 24 }} />
@@ -120,12 +119,12 @@ export default function RegisterPersonalScreen() {
                             <Image source={{ uri: data.profilePhotoUri }} style={styles.profilePhoto} />
                         ) : (
                             <View style={styles.photoPlaceholder}>
-                                <Ionicons name="camera" size={40} color={COLORS.gray600} />
+                                <Text style={{ fontSize: 40 }}>📷</Text>
                                 <Text style={styles.photoText}>Ajouter une photo</Text>
                             </View>
                         )}
                         <View style={styles.editBadge}>
-                            <Ionicons name="pencil" size={16} color={COLORS.white} />
+                            <Text style={{ fontSize: 14, color: COLORS.white }}>✏️</Text>
                         </View>
                     </TouchableOpacity>
                     {errors.photo && <Text style={styles.errorText}>{errors.photo}</Text>}
@@ -200,7 +199,7 @@ export default function RegisterPersonalScreen() {
                 <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
                     <LinearGradient colors={[COLORS.secondary, COLORS.secondaryDark]} style={styles.gradientBtn}>
                         <Text style={styles.nextText}>Suivant</Text>
-                        <Ionicons name="arrow-forward" size={20} color={COLORS.white} />
+                        <Text style={{ fontSize: 18, color: COLORS.white }}>➡️</Text>
                     </LinearGradient>
                 </TouchableOpacity>
             </View>

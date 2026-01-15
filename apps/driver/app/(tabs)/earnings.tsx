@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
 import { rideService } from '../../src/services/supabaseService';
 import { useDriverStore } from '../../src/stores/driverStore';
 import { useProfileTerms } from '../../src/hooks/useProfileTerms';

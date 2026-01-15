@@ -3,9 +3,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
-import { useFonts } from 'expo-font';
 import { Asset } from 'expo-asset';
-import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
@@ -28,19 +26,10 @@ export default function RootLayout() {
     // Activer la synchro Wallet/Profil (Admin -> App)
     useDriverSync();
 
-    const [fontsLoaded, fontError] = useFonts({
-        ...Ionicons.font,
-        ...MaterialIcons.font,
-    });
-
-    useEffect(() => {
-        if (fontError) console.error('Error loading fonts:', fontError);
-    }, [fontError]);
-
     useEffect(() => {
         async function prepare() {
             try {
-                // Pre-load essential app assets
+                // Pre-load essential app assets (NO FONT LOADING - Using Emojis)
                 await Asset.loadAsync([
                     require('../assets/icon.png'),
                     require('../assets/splash.png'),
@@ -61,7 +50,7 @@ export default function RootLayout() {
         }
     }, [appIsReady]);
 
-    if (!appIsReady || !fontsLoaded) {
+    if (!appIsReady) {
         return null;
     }
 

@@ -16,9 +16,9 @@ import {
     Image,
     Linking,
 } from 'react-native';
+import { router } from 'expo-router'; // Fix: Import router
 import { WelcomeImage } from '../onboarding/welcomeAsset';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
 import { supabase, driverService } from '../../src/services/supabaseService';
 import { useDriverStore } from '../../src/stores/driverStore';
 import { pushNotificationService } from '../../src/services/pushNotificationService';
@@ -378,7 +378,7 @@ export default function LoginScreen() {
                                 style={styles.gradient}
                             >
                                 <Text style={styles.submitText}>S'inscrire</Text>
-                                <Ionicons name="arrow-forward" size={20} color={COLORS.white} style={{ marginLeft: 8 }} />
+                                <Text style={{ fontSize: 18, color: COLORS.white, marginLeft: 8 }}>➡️</Text>
                             </LinearGradient>
                         </TouchableOpacity>
                     </View>

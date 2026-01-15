@@ -14,8 +14,6 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
-
 const COLORS = {
     primary: '#FF6B00',
     secondary: '#00C853',
@@ -343,3 +341,4 @@ const styles = StyleSheet.create({
     tipsTitle: { fontSize: 14, fontWeight: 'bold', color: COLORS.black, marginBottom: 8 },
     tipItem: { fontSize: 12, color: COLORS.gray600, marginBottom: 4, lineHeight: 18 },
 });
+

@@ -126,6 +126,22 @@ export function useBooking(passengerId: string | null): UseBookingReturn {
                     dropoff: data.dropoffAddress,
                     price: data.price,
                 });
+
+                // DÉCLENCHER LA CASCADE DE NOTIFICATIONS
+                // C'est ici que la magie opère : on notifie les chauffeurs un par un
+                rideService.notifyDriversCascade(
+                    ride.id,
+                    data.pickupLat,
+                    data.pickupLng,
+                    {
+                        pickupAddress: data.pickupAddress,
+                        dropoffAddress: data.dropoffAddress,
+                        price: data.price,
+                        distance: data.distanceKm,
+                        vehicleType: data.vehicleType || 'standard', // SUPER IMPORTANT pour le filtrage
+                    }
+                ).catch(err => console.error("Error triggering cascade:", err));
+
                 return ride.id;
             }
 

@@ -16,8 +16,6 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
-
 const { width } = Dimensions.get('window');
 
 const COLORS = {
@@ -347,3 +345,4 @@ const styles = StyleSheet.create({
     stepNumberText: { fontSize: 14, fontWeight: 'bold', color: COLORS.white },
     stepText: { flex: 1, fontSize: 13, color: COLORS.black, marginLeft: 12 },
 });
+

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, StatusBar, Alert } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Speech from 'expo-speech';
 import { openNavigation } from '../src/utils/navigation';
@@ -203,3 +202,4 @@ const styles = StyleSheet.create({
     cancelBtn: { alignItems: 'center', padding: 10 },
     cancelText: { color: '#F44336', fontSize: 16, fontWeight: '500' },
 });
+

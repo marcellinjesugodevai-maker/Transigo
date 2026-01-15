@@ -18,7 +18,6 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
 import { useDriverStore } from '../src/stores/driverStore';
 import { supportService, ChatMessage } from '../src/services/supportService';
 import { supabase } from '../src/services/supabaseService';
@@ -283,3 +282,4 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
 });
+

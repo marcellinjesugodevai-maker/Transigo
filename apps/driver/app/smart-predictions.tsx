@@ -16,7 +16,6 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
 import * as Speech from 'expo-speech';
 
 const { width } = Dimensions.get('window');
@@ -351,3 +350,4 @@ const styles = StyleSheet.create({
     timeLabel: { fontSize: 11, color: COLORS.gray600 },
     timeEarnings: { fontSize: 16, fontWeight: 'bold', color: COLORS.secondary, marginTop: 6 },
 });
+

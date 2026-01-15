@@ -52,7 +52,7 @@ const POPULAR_PLACES = [
     {
         id: '2',
         name: 'Plateau',
-        icon: 'grid',
+        icon: 'business',
         distance: '5 km',
         duration: '15 min',
         coords: { latitude: 5.3219, longitude: -4.0156 },

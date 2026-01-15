@@ -16,6 +16,7 @@ interface OSMMapProps {
         longitude: number;
         icon?: string;
         title?: string;
+        vehicle_type?: string; // Ajout du type de véhicule
     }>;
     routeCoordinates?: Array<{
         latitude: number;
@@ -131,7 +132,6 @@ export default function OSMMap({
         .taxi-car {
             width: 40px;
             height: 40px;
-            background: linear-gradient(135deg, #FF6B00 0%, #FF8C00 100%);
             border-radius: 50%;
             border: 3px solid white;
             box-shadow: 0 3px 8px rgba(0,0,0,0.4);
@@ -140,6 +140,16 @@ export default function OSMMap({
             justify-content: center;
             position: relative;
         }
+
+        /* Couleurs par catégorie */
+        .taxi-standard { background: linear-gradient(135deg, #607D8B 0%, #455A64 100%); }
+        .taxi-comfort { background: linear-gradient(135deg, #37474F 0%, #263238 100%); }
+        .taxi-luxury { background: linear-gradient(135deg, #212121 0%, #000000 100%); border: 3px solid #FFD700; } /* Bordure Or pour Luxe */
+        .taxi-family { background: linear-gradient(135deg, #1A237E 0%, #0D47A1 100%); }
+        .taxi-moto { background: linear-gradient(135deg, #FF6F00 0%, #E65100 100%); width: 32px; height: 32px; } /* Plus petit pour moto */
+
+        /* Fallback */
+        .taxi-default { background: linear-gradient(135deg, #FF6B00 0%, #FF8C00 100%); }
         
         .taxi-car::after {
             content: '';
@@ -178,9 +188,6 @@ export default function OSMMap({
         var markersById = {};
         var markerPositions = {};  // Pour calculer la direction
         var markerBearings = {};   // Orientation actuelle de chaque marqueur
-        var routeLine = null;
-        var lastRouteKey = '';
-        var sharedRouteLines = {}; // Stockage des lignes partagées par ID
 
         setTimeout(function() { map.invalidateSize(); }, 200);
 
@@ -198,7 +205,7 @@ export default function OSMMap({
             return (bearing + 360) % 360;  // Normaliser à 0-360
         }
 
-        function createMarkerIcon(id, hasRoute, bearing) {
+        function createMarkerIcon(id, hasRoute, bearing, vehicleType) {
             var markerHtml = '';
             var size = [24, 24];
             
@@ -215,10 +222,20 @@ export default function OSMMap({
                 size = [20, 20];
             }
             else {
-                // Taxi/Driver avec rotation - la flèche pointe vers le haut par défaut (0° = nord)
+                // Taxi/Driver avec rotation
                 var rotationAngle = bearing || 0;
-                markerHtml = '<div class="taxi-marker" style="transform: rotate(' + rotationAngle + 'deg);"><div class="taxi-car"><span class="taxi-inner">🚗</span></div></div>';
-                size = [44, 44];
+                var typeClass = 'taxi-default';
+                var emoji = '🚗';
+
+                // Mapper le type vers la classe CSS
+                if (vehicleType === 'standard') typeClass = 'taxi-standard';
+                else if (vehicleType === 'comfort') typeClass = 'taxi-comfort';
+                else if (vehicleType === 'luxury') typeClass = 'taxi-luxury';
+                else if (vehicleType === 'family') { typeClass = 'taxi-family'; emoji = '🚐'; }
+                else if (vehicleType === 'moto') { typeClass = 'taxi-moto'; emoji = '🏍️'; size = [32, 32]; }
+
+                markerHtml = '<div class="taxi-marker" style="transform: rotate(' + rotationAngle + 'deg);"><div class="taxi-car ' + typeClass + '"><span class="taxi-inner">' + emoji + '</span></div></div>';
+                if (vehicleType !== 'moto') size = [44, 44];
             }
             
             return L.divIcon({
@@ -231,12 +248,9 @@ export default function OSMMap({
 
         function updateMap(data) {
             if (!data) return;
-
             var hasRoute = data.routeCoordinates && data.routeCoordinates.length > 1;
-
-            // 1. MARQUEURS - Mise à jour douce sans flash
-            var receivedIds = {};
             
+            var receivedIds = {};
             if (data.markers && data.markers.length > 0) {
                 data.markers.forEach(function(m) {
                     if (m.latitude == null || m.longitude == null) return;
@@ -245,35 +259,28 @@ export default function OSMMap({
                     receivedIds[id] = true;
                     var latLng = L.latLng(m.latitude, m.longitude);
                     
-                    // Calculer le bearing pour taxi/driver
                     var bearing = markerBearings[id] || 0;
-                    var isTaxi = (id === 'driver' || id === 'taxi' || id.indexOf('taxi') !== -1);
+                    var isTaxi = (id === 'driver' || id.indexOf('driver') !== -1 || id === 'taxi' || id.indexOf('taxi') !== -1 || !isNaN(id));
                     
                     if (isTaxi && markerPositions[id]) {
                         var prevPos = markerPositions[id];
                         var dist = Math.abs(m.latitude - prevPos.lat) + Math.abs(m.longitude - prevPos.lon);
-                        
-                        // Calculer bearing seulement si déplacé significativement
                         if (dist > 0.00001) {
                             bearing = calculateBearing(prevPos.lat, prevPos.lon, m.latitude, m.longitude);
                             markerBearings[id] = bearing;
                         }
                     }
                     
-                    // Sauvegarder la position actuelle
                     markerPositions[id] = { lat: m.latitude, lon: m.longitude };
                     
                     if (markersById[id]) {
-                        // Déplacer le marqueur
                         markersById[id].setLatLng(latLng);
-                        
-                        // Mettre à jour l'icône avec la nouvelle rotation (seulement pour taxi)
                         if (isTaxi) {
-                            var newIcon = createMarkerIcon(id, hasRoute, bearing);
+                            var newIcon = createMarkerIcon(id, hasRoute, bearing, m.vehicle_type);
                             markersById[id].setIcon(newIcon);
                         }
                     } else {
-                        var icon = createMarkerIcon(id, hasRoute, bearing);
+                        var icon = createMarkerIcon(id, hasRoute, bearing, m.vehicle_type);
                         markersById[id] = L.marker(latLng, { icon: icon }).addTo(map);
                     }
                 });

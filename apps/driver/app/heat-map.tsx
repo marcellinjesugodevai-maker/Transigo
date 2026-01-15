@@ -16,8 +16,6 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
-
 const { width } = Dimensions.get('window');
 
 const COLORS = {
@@ -373,3 +371,4 @@ const styles = StyleSheet.create({
     surgeBadge: { backgroundColor: '#FFF8E1', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 10, marginTop: 8, alignSelf: 'flex-start' },
     surgeText: { fontSize: 11, fontWeight: '600', color: COLORS.primary },
 });
+

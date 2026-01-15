@@ -11,7 +11,6 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
 import * as Speech from 'expo-speech';
 
 const COLORS = {
@@ -123,3 +122,4 @@ const styles = StyleSheet.create({
     micLabel: { fontSize: 14, fontWeight: '600', color: COLORS.gray },
     divider: { width: 1, height: '60%', backgroundColor: '#EEEEEE' },
 });
+
